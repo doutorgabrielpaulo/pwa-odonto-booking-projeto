@@ -1,0 +1,111 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="p-4 md:p-6 space-y-4">
+
+    <div class="w-full rounded-xl overflow-hidden shadow-md">
+        <img src="{{ banner_url }}" onerror="this.onerror=null;this.src='https://placehold.co/600x200/3B82F6/FFFFFF?text=Banner+Promocional';" alt="Banner Odonto Booking" class="w-full h-auto">
+    </div>
+
+    {% if highlight_items %}
+    <div class="bg-white p-3 rounded-xl shadow-md">
+        <h4 class="text-xs font-bold text-gray-800 mb-2">Destaques para você ✨</h4>
+        <div class="grid grid-cols-3 gap-2">
+            {% for item in highlight_items %}
+            <a href="{{ item.video_url }}" target="_blank" class="block rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <img src="https://img.youtube.com/vi/{{ item.video_url.split('v=')[-1] }}/mqdefault.jpg" alt="{{ item.title }}" class="w-full h-auto">
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="bg-white p-3 rounded-xl shadow-md flex items-start space-x-3">
+        <img src="{{ url_for('static', filename='img/avatars/' + avatar_filename) }}" onerror="this.onerror=null;this.src='https://placehold.co/100x100/EBF4FF/3B82F6?text=AV';" alt="Avatar" class="w-14 h-14 rounded-lg object-cover flex-shrink-0">
+        <div class="flex-grow">
+            {% if current_user.is_vip %}
+            <span class="text-xs font-bold text-yellow-500 bg-yellow-100 px-2 py-0.5 rounded-full">⭐ Dr(a). VIP</span>
+            {% endif %}
+            <h3 class="font-bold text-gray-800 text-sm truncate">{{ current_user.nome_completo }}</h3>
+            <p class="text-xs text-gray-500 mb-2">CRO: {{ current_user.cro }}-{{ current_user.uf_cro }}</p>
+            
+            <div class="space-y-1 text-xs text-gray-600">
+                <div class="flex justify-between items-center"><span>Reservas Pagas:</span><span class="font-semibold text-green-600">{{ reservas_pagas }}</span></div>
+                <div class="flex justify-between items-center"><span>Cancelamentos:</span><span class="font-semibold text-red-600">{{ cancelamentos }}</span></div>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                {% set progress = (linha_media / (reservas_pagas + 1)) * 100 %}
+                <div class="bg-gradient-to-r from-green-400 to-blue-500 h-1.5 rounded-full" style="width: {{ progress }}%"></div>
+            </div>
+            <p class="text-right text-[10px] text-gray-400 mt-1">Linha Média: {{ linha_media }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+        <a href="{{ url_for('main.rent_room') }}" class="block p-3 bg-blue-50 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <i class="fas fa-tooth text-xl text-blue-600"></i>
+            <h4 class="font-bold text-gray-800 mt-1 text-sm">Alugar Salas</h4>
+            <p class="text-xs text-gray-500">Veja os horários</p>
+        </a>
+        <a href="{{ url_for('main.my_reservations') }}" class="block p-3 bg-blue-50 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <i class="fas fa-calendar-alt text-xl text-blue-600"></i>
+            <h4 class="font-bold text-gray-800 mt-1 text-sm">Minhas Reservas</h4>
+            <p class="text-xs text-gray-500">Gerencie seus agendamentos</p>
+        </a>
+        <a href="{{ url_for('main.rent_equipment') }}" class="block p-3 bg-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <i class="fas fa-microscope text-xl text-gray-600"></i>
+            <h4 class="font-bold text-gray-800 mt-1 text-sm">Equipamentos</h4>
+            <p class="text-xs text-gray-500">Aluguel por diária</p>
+        </a>
+        <a href="{{ url_for('main.tutorials') }}" class="block p-3 bg-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <i class="fas fa-video text-xl text-gray-600"></i>
+            <h4 class="font-bold text-gray-800 mt-1 text-sm">Tutoriais</h4>
+            <p class="text-xs text-gray-500">Aprenda a usar</p>
+        </a>
+        <a href="#" class="block p-3 bg-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <i class="fas fa-car text-xl text-gray-600"></i>
+            <h4 class="font-bold text-gray-800 mt-1 text-sm">Garagem</h4>
+            <p class="text-xs text-gray-500">Reserve sua vaga</p>
+        </a>
+        <a href="#" class="block p-3 bg-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <i class="fas fa-user-md text-xl text-gray-600"></i>
+            <h4 class="font-bold text-gray-800 mt-1 text-sm">Gestão</h4>
+            <p class="text-xs text-gray-500">Gerencie pacientes</p>
+        </a>
+        <a href="#" class="block p-3 bg-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <i class="fas fa-store text-xl text-gray-600"></i>
+            <h4 class="font-bold text-gray-800 mt-1 text-sm">Loja</h4>
+            <p class="text-xs text-gray-500">Produtos e ofertas</p>
+        </a>
+        <a href="#" class="block p-3 bg-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <i class="fas fa-graduation-cap text-xl text-gray-600"></i>
+            <h4 class="font-bold text-gray-800 mt-1 text-sm">Cursos</h4>
+            <p class="text-xs text-gray-500">Aprimore-se</p>
+        </a>
+        <a href="#" class="block p-3 bg-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <i class="fas fa-file-invoice text-xl text-gray-600"></i>
+            <h4 class="font-bold text-gray-800 mt-1 text-sm">Prontuários</h4>
+            <p class="text-xs text-gray-500">Histórico de pacientes</p>
+        </a>
+        <a href="#" class="block p-3 bg-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <i class="fas fa-prescription-bottle-alt text-xl text-gray-600"></i>
+            <h4 class="font-bold text-gray-800 mt-1 text-sm">Receituários</h4>
+            <p class="text-xs text-gray-500">Emita receitas</p>
+        </a>
+        <a href="#" class="block p-3 bg-green-50 rounded-xl shadow-sm hover:shadow-md transition-shadow col-span-2">
+            <i class="fas fa-star text-xl text-green-600"></i>
+            <h4 class="font-bold text-gray-800 mt-1 text-sm">Clube FOBS</h4>
+            <p class="text-xs text-gray-500">Seus pontos e vantagens</p>
+        </a>
+        <a href="{{ url_for('main.patient_messages') }}" class="block p-3 bg-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow col-span-2">
+            <i class="fas fa-robot text-xl text-gray-600"></i>
+            <h4 class="font-bold text-gray-800 mt-1 text-sm">Mensagens com IA</h4>
+            <p class="text-xs text-gray-500">Gere textos para pacientes</p>
+        </a>
+    </div>
+    
+    <div class="flex justify-center items-center gap-4 pt-4">
+        <a href="{{ url_for('main.delete_account') }}" class="text-xs text-gray-500 hover:text-red-600 hover:underline">Deletar Conta</a>
+        <a href="{{ url_for('auth.logout') }}" class="text-xs text-gray-500 hover:text-blue-600 hover:underline">Sair da Conta</a>
+    </div>
+</div>
+{% endblock %}

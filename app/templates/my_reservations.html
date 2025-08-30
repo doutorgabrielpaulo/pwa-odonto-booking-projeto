@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary btn-back-register"><i class="fas fa-arrow-left"></i> Voltar ao Painel</a>
+        <h2>Minhas Reservas</h2>
+    </div>
+
+    <div class="reservations-section">
+        <h3>Próximas Reservas</h3>
+        {% if upcoming %}
+            <ul class="reservation-list">
+            {% for res in upcoming %}
+                <li>
+                    <div class="res-info">
+                        <strong>{{ res.reservation_date.strftime('%d/%m/%Y') }} ({{ res.room.name }})</strong><br>
+                        <span>{{ res.start_time.strftime('%H:%M') }} - {{ res.end_time.strftime('%H:%M') }}</span>
+                    </div>
+                    <form method="POST" action="{{ url_for('main.cancel_reservation', reservation_id=res.id) }}" onsubmit="return confirm('Tem certeza que deseja cancelar esta reserva?');">
+                        <button type="submit" class="btn btn-danger btn-small">Cancelar</button>
+                    </form>
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>Você não possui nenhuma reserva futura.</p>
+        {% endif %}
+    </div>
+
+    <div class="reservations-section">
+        <h3>Reservas Anteriores</h3>
+        {% if past %}
+             <ul class="reservation-list">
+            {% for res in past %}
+                <li>
+                    <div class="res-info">
+                        <strong>{{ res.reservation_date.strftime('%d/%m/%Y') }} ({{ res.room.name }})</strong><br>
+                        <span>{{ res.start_time.strftime('%H:%M') }} - {{ res.end_time.strftime('%H:%M') }}</span>
+                    </div>
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>Você não possui reservas anteriores.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

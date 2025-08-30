@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+         <a href="{{ url_for('admin.users_list') }}" class="btn btn-secondary btn-back-register"><i class="fas fa-arrow-left"></i> Voltar para a Lista</a>
+        <h2>Editando: {{ user.nome_completo }}</h2>
+    </div>
+
+    <div class="login-box">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.nome_completo.label }}
+                {{ form.nome_completo(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.email.label }}
+                {{ form.email(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.score.label }}
+                {{ form.score(class="form-control") }}
+            </div>
+            <div class="form-options">
+                <div class="remember-me">
+                    {{ form.is_vip() }} {{ form.is_vip.label }}
+                </div>
+                 <div class="remember-me">
+                    {{ form.is_chato() }} {{ form.is_chato.label }}
+                </div>
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+</div>
+{% endblock %}

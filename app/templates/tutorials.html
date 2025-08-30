@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header-stacked">
+        <h2>Tutoriais</h2>
+        <div class="header-actions">
+             <a href="{{ url_for('admin.dashboard') if current_user.is_admin else url_for('main.dashboard') }}" class="btn btn-secondary btn-small"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+    </div>
+    <div class="tutorial-list">
+        {% for tutorial in tutorials %}
+        <div class="tutorial-card">
+            <h4>{{ tutorial.title }}</h4>
+            <div class="video-container">
+                <iframe src="{{ tutorial.video_url.replace('watch?v=', 'embed/') }}" title="{{ tutorial.title }}" frameborder="0" allowfullscreen></iframe>
+            </div>
+            {% if tutorial.description %}<p>{{ tutorial.description }}</p>{% endif %}
+        </div>
+        {% else %}
+        <p>Nenhum tutorial disponível no momento.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

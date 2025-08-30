@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="p-4 md:p-6 space-y-4">
+    <div class="page-header-stacked">
+        <h2 class="text-lg font-bold text-gray-800">Relatório da Garagem</h2>
+        <div class="header-actions">
+            <a href="{{ url_for('admin.dashboard') }}" class="inline-block text-sm text-blue-600 hover:underline"><i class="fas fa-arrow-left mr-2"></i>Voltar ao Painel</a>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-md">
+        <div class="flex items-center mb-4">
+            <i class="fas fa-robot text-3xl text-blue-500 mr-4"></i>
+            <div>
+                <h3 class="font-bold text-base text-gray-800">Este processo agora é 100% automático!</h3>
+                <p class="text-sm text-gray-600">Você não precisa mais clicar em nenhum botão.</p>
+            </div>
+        </div>
+        <div class="text-sm text-gray-700 space-y-2">
+            <p>Todos os dias, às <strong>22:00</strong>, o sistema irá automaticamente:</p>
+            <ul class="list-disc list-inside pl-4 space-y-1">
+                <li>Buscar todas as reservas de garagem para o dia seguinte.</li>
+                <li>Montar o relatório completo no formato exato.</li>
+                <li>Enviar o relatório para a empresa de estacionamento (simulado no terminal por enquanto).</li>
+            </ul>
+            <p class="pt-2">Seu trabalho manual com a lista da garagem acabou. O consultório inteligente cuida disso para você.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

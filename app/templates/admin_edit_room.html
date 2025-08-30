@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="p-4 md:p-6">
+    <div class="w-full max-w-2xl mx-auto">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h2 class="text-xl font-bold text-gray-800">{{ title }}</h2>
+            </div>
+            <a href="{{ url_for('admin.rooms_list') }}" class="text-sm text-blue-600 hover:underline"><i class="fas fa-arrow-left mr-2"></i>Voltar para a Lista</a>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-md">
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="{{ form.name.id }}" class="text-xs font-semibold text-gray-500">{{ form.name.label }}</label>
+                            {{ form.name(class="w-full mt-1 p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 border-gray-200 focus:ring-blue-600") }}
+                        </div>
+                        <div>
+                            <label for="{{ form.description.id }}" class="text-xs font-semibold text-gray-500">{{ form.description.label }}</label>
+                            {{ form.description(class="w-full mt-1 p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 border-gray-200 focus:ring-blue-600") }}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="{{ form.price_2h30.id }}" class="text-xs font-semibold text-gray-500">{{ form.price_2h30.label }}</label>
+                            {{ form.price_2h30(class="w-full mt-1 p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 border-gray-200 focus:ring-blue-600") }}
+                        </div>
+                        <div>
+                            <label for="{{ form.price_1h15.id }}" class="text-xs font-semibold text-gray-500">{{ form.price_1h15.label }}</label>
+                            {{ form.price_1h15(class="w-full mt-1 p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 border-gray-200 focus:ring-blue-600") }}
+                        </div>
+                    </div>
+                    <div>
+                        <label for="{{ form.video_url.id }}" class="text-xs font-semibold text-gray-500">{{ form.video_url.label }}</label>
+                        {{ form.video_url(class="w-full mt-1 p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 border-gray-200 focus:ring-blue-600") }}
+                    </div>
+                    <div>
+                        <label for="{{ form.equipments_tags.id }}" class="text-xs font-semibold text-gray-500">{{ form.equipments_tags.label }}</label>
+                        {{ form.equipments_tags(class="w-full mt-1 p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 border-gray-200 focus:ring-blue-600", placeholder="Raio X, Fotopolimerizador, Bomba de Vácuo") }}
+                    </div>
+                    <div>
+                        <label for="{{ form.admin_notice.id }}" class="text-xs font-semibold text-gray-500">{{ form.admin_notice.label }}</label>
+                        {{ form.admin_notice(class="w-full mt-1 p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 border-gray-200 focus:ring-blue-600", rows="3") }}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        {{ form.is_active(class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500") }}
+                        <label for="{{ form.is_active.id }}" class="text-sm text-gray-700">{{ form.is_active.label }}</label>
+                    </div>
+                    <div class="pt-2">
+                        {{ form.submit(class="w-full p-2.5 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition-colors text-sm") }}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

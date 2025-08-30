@@ -1,0 +1,96 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="p-4 md:p-8">
+    <div class="w-full max-w-sm mx-auto space-y-3">
+        
+        <a href="{{ url_for('auth.login') }}" class="inline-block text-sm text-blue-600 hover:underline mb-2"><i class="fas fa-arrow-left mr-2"></i>Voltar para o Login</a>
+
+        <div class="aspect-video rounded-xl overflow-hidden shadow-lg">
+            <iframe width="100%" height="100%" src="{{ video_url }}" title="Apresentação Odonto Booking" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        
+        <!-- A tag <form> duplicada foi removida. Agora só existe esta. -->
+        <form id="register-form" method="POST" action="{{ url_for('auth.register') }}" novalidate>
+            {{ form.hidden_tag() }}
+            <div class="space-y-2">
+                
+                <!-- Campo Nome Completo -->
+                <div>
+                    <label for="{{ form.nome_completo.id }}" class="text-xs font-semibold text-gray-500">{{ form.nome_completo.label }}</label>
+                    {{ form.nome_completo(class="w-full p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 " + ("border-red-500 focus:ring-red-500" if form.nome_completo.errors else "border-gray-200 focus:ring-blue-600")) }}
+                </div>
+ <!-- CAMPO GÊNERO ADICIONADO -->
+                <div>
+                    <label for="{{ form.genero.id }}" class="text-xs font-semibold text-gray-500">{{ form.genero.label }}</label>
+                    {{ form.genero(class="w-full p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 " + ("border-red-500 focus:ring-red-500" if form.genero.errors else "border-gray-200 focus:ring-blue-600")) }}
+                    {% for error in form.genero.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                <!-- Campos CRO e UF -->
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="col-span-2">
+                        <label for="{{ form.cro.id }}" class="text-xs font-semibold text-gray-500">{{ form.cro.label }}</label>
+                        {{ form.cro(class="w-full p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 " + ("border-red-500 focus:ring-red-500" if form.cro.errors else "border-gray-200 focus:ring-blue-600")) }}
+                    </div>
+                    <div>
+                        <label for="{{ form.uf_cro.id }}" class="text-xs font-semibold text-gray-500">{{ form.uf_cro.label }}</label>
+                        {{ form.uf_cro(class="w-full p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 " + ("border-red-500 focus:ring-red-500" if form.uf_cro.errors else "border-gray-200 focus:ring-blue-600")) }}
+                    </div>
+                </div>
+
+                 <!-- Outros Campos -->
+                 <div>
+                    <label for="{{ form.cpf.id }}" class="text-xs font-semibold text-gray-500">{{ form.cpf.label }}</label>
+                    {{ form.cpf(class="w-full p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 " + ("border-red-500 focus:ring-red-500" if form.cpf.errors else "border-gray-200 focus:ring-blue-600")) }}
+                </div>
+                 <div>
+                    <label for="{{ form.whatsapp.id }}" class="text-xs font-semibold text-gray-500">{{ form.whatsapp.label }}</label>
+                    {{ form.whatsapp(id="whatsapp-input", class="w-full p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 " + ("border-red-500 focus:ring-red-500" if form.whatsapp.errors else "border-gray-200 focus:ring-blue-600")) }}
+                </div>
+                 <div>
+                    <label for="{{ form.data_nascimento.id }}" class="text-xs font-semibold text-gray-500">{{ form.data_nascimento.label }}</label>
+                    {{ form.data_nascimento(type="date", class="w-full p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 " + ("border-red-500 focus:ring-red-500" if form.data_nascimento.errors else "border-gray-200 focus:ring-blue-600")) }}
+                </div>
+                <div>
+                    <label for="{{ form.email.id }}" class="text-xs font-semibold text-gray-500">{{ form.email.label }}</label>
+                    {{ form.email(class="w-full p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 " + ("border-red-500 focus:ring-red-500" if form.email.errors else "border-gray-200 focus:ring-blue-600")) }}
+                </div>
+                 <div>
+                    <label for="{{ form.password.id }}" class="text-xs font-semibold text-gray-500">{{ form.password.label }}</label>
+                    {{ form.password(id="password", class="w-full p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 " + ("border-red-500 focus:ring-red-500" if form.password.errors else "border-gray-200 focus:ring-blue-600")) }}
+                </div>
+                <div>
+                    <label for="{{ form.password2.id }}" class="text-xs font-semibold text-gray-500">{{ form.password2.label }}</label>
+                    {{ form.password2(id="password2", class="w-full p-2.5 bg-gray-100 border rounded-lg text-sm focus:outline-none focus:ring-2 " + ("border-red-500 focus:ring-red-500" if form.password2.errors else "border-gray-200 focus:ring-blue-600")) }}
+                    <p id="password-match-error" class="text-red-500 text-xs mt-1 hidden">As senhas não conferem.</p>
+                </div>
+                
+                <div class="flex items-start gap-2 pt-2">
+                    {{ form.accept_terms(class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500") }}
+                    <label for="accept_terms" class="text-xs text-gray-600">Ao realizar o cadastro você entende que é crime exercer a função sem possuir formação necessária e se compromete a ser responsável por quaisquer danos causados à propriedade da Odonto Booking.</label>
+                </div>
+            </div>
+            <div class="pt-3">
+                {{ form.submit(class="w-full p-2.5 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition-colors text-sm") }}
+            </div>
+             <a href="{{ url_for('auth.login') }}" class="block text-center text-xs text-blue-600 hover:underline mt-4">Já tenho uma conta</a>
+        </form>
+    </div>
+</div>
+
+<!-- ESTRUTURA DO POP-UP DE ERRO -->
+<div id="error-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
+        <div class="flex items-center mb-3">
+            <i class="fas fa-exclamation-triangle text-red-500 text-2xl mr-3"></i>
+            <h3 class="text-lg font-bold text-gray-800">Atenção!</h3>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">Por favor, corrija os seguintes itens para continuar:</p>
+        <ul id="error-list" class="list-disc list-inside text-sm text-red-600 space-y-1">
+            <!-- Os erros serão inseridos aqui pelo JavaScript -->
+        </ul>
+        <button id="close-modal-btn" class="w-full mt-5 p-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 text-sm">Entendi</button>
+    </div>
+</div>
+{% endblock %}

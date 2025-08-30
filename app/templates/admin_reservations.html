@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-back-register"><i class="fas fa-arrow-left"></i> Voltar ao Painel</a>
+        <h2>Reservas do Dia</h2>
+    </div>
+
+    <div class="date-selector-container">
+        <form method="POST" action="{{ url_for('admin.view_reservations') }}">
+            <label for="selected_date">Selecione a data:</label>
+            <input type="date" id="selected_date" name="selected_date" value="{{ selected_date.strftime('%Y-%m-%d') }}">
+            <button type="submit" class="btn btn-primary btn-small">Buscar Reservas</button>
+        </form>
+    </div>
+
+    <div class="reservations-section">
+        <h3>Reservas para {{ selected_date.strftime('%d/%m/%Y') }}</h3>
+        {% if reservations %}
+            <ul class="reservation-list">
+            {% for res in reservations %}
+                <li>
+                    <div class="res-info">
+                        <strong>{{ res.room.name }}</strong> ({{ res.room.description }})<br>
+                        <span>{{ res.start_time.strftime('%H:%M') }} - {{ res.end_time.strftime('%H:%M') }}</span><br>
+                        <small>Reservado por: {{ res.user.nome_completo }} (Score: {{ res.user.score }})</small>
+                    </div>
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>Nenhuma reserva encontrada para esta data.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

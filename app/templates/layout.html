@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title><center>Odonto Booking</center></title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome (Ícones) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <!-- Google Fonts (Poppins) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Estilos Customizados -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='1.2') }}">
+    
+    <style>
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        @media (max-width: 767px) {
+            #app-container {
+                height: 100vh;
+                height: -webkit-fill-available;
+            }
+            
+            .app-screen-content {
+                max-height: calc(100vh - 48px);
+                background-color: white; /* Sempre branco em mobile */
+            }
+            
+            body:has(#mobile-nav) .app-screen-content {
+                max-height: calc(100vh - 48px - 56px);
+            }
+        }
+    </style>
+</head>
+<body class="p-0 m-0">
+    <!-- Container principal que se expande para preencher a tela -->
+    <div id="app-container" class="relative w-full h-full bg-white flex flex-col md:flex-row">
+    
+        <!-- Menu Lateral para Desktop (SÓ APARECE SE O USUÁRIO ESTIVER LOGADO) -->
+        {% if current_user.is_authenticated %}
+        <nav id="desktop-nav" class="hidden md:flex flex-col items-center justify-between p-4 bg-gray-100 border-r border-gray-200 w-24 flex-shrink-0">
+            <div class="space-y-8 text-center pt-6">
+                <a href="{{ url_for('main.dashboard') }}" class="nav-item p-2 text-center text-gray-500 hover:text-blue-600 w-full"><i></i><span class="text-xs font-semibold block mt-1">MEU PAINEL</span></a>
+                <a href="{{ url_for('main.rent_room') }}" class="nav-item p-2 text-center text-gray-500 hover:text-blue-600 w-full"><i></i><span class="text-xs font-semibold block mt-1">SALAS DISPONÍVEIS</span></a>
+                <a href="{{ url_for('main.my_reservations') }}" class="nav-item p-2 text-center text-gray-500 hover:text-blue-600 w-full"><i></i><span class="text-xs font-semibold block mt-1">MINHAS RESERVAS</span></a>
+            </div>
+            <div class="space-y-8 text-center pb-6">
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin.dashboard') }}" class="nav-item p-2 text-center text-gray-500 hover:text-blue-600 w-full"><i class="fas fa-user-shield text-2xl"></i><span class="text-xs font-semibold block mt-1">ADMIN</span></a>
+                {% endif %}
+                <a href="{{ url_for('auth.logout') }}" class="nav-item p-2 text-center text-gray-500 hover:text-red-500 w-full"><i class="fas fa-sign-out-alt text-2xl"></i><span class="text-xs font-semibold block mt-1">SAIR</span></a>
+            </div>
+        </nav>
+        {% endif %}
+        
+        <!-- Conteúdo principal (Header + Main) -->
+        <div class="flex flex-col flex-1 h-full min-w-0">
+            <header class="flex items-center justify-between p-3 bg-blue-600 text-white shadow-md z-10 flex-shrink-0">
+                {% if current_user.is_authenticated %}
+                <div class="w-6 md:hidden"></div>
+                {% else %}
+                <div class="w-6"></div>
+                {% endif %}
+                <h1 id="header-title" class="text-sm font-semibold uppercase tracking-wider">Odonto Booking</h1>
+                <div class="w-6"></div>
+            </header>
+            
+            <main class="flex-1 overflow-y-auto app-screen-content bg-white">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="p-4">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} rounded-lg p-3 text-center text-sm">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                
+                {% block content %}{% endblock %}
+            </main>
+            
+            {% if current_user.is_authenticated %}
+            <nav id="mobile-nav" class="flex md:hidden items-center justify-around p-2 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-10 flex-shrink-0" style="height: 56px;">
+                <a href="{{ url_for('main.dashboard') }}" class="nav-item p-2 text-center text-gray-500 hover:text-blue-600"><i></i><span class="text-xs font-semibold">MEU PAINEL</span></a>
+                <a href="{{ url_for('main.rent_room') }}" class="nav-item p-2 text-center text-blue-600"><i></i><span class="text-xs font-semibold">SALAS DISPONÍVEIS</span></a>
+                <a href="{{ url_for('main.my_reservations') }}" class="nav-item p-2 text-center text-gray-500 hover:text-blue-600"><i></i><span class="text-xs font-semibold">MINHAS RESERVAS</span></a>
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin.dashboard') }}" class="nav-item p-2 text-center text-gray-500 hover:text-blue-600"><i class="fas fa-user-shield text-xl"></i><span class="text-xs font-semibold">ADMIN</span></a>
+                {% endif %}
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const isMobile = window.innerWidth < 768;
+            
+            if (isMobile) {
+                const header = document.querySelector('header');
+                const main = document.querySelector('main');
+                const mobileNav = document.getElementById('mobile-nav');
+                
+                if (header && main) {
+                    const headerHeight = header.offsetHeight;
+                    const navHeight = mobileNav ? mobileNav.offsetHeight : 0;
+                    
+                    // Ajustar a altura máxima do conteúdo principal
+                    main.style.maxHeight = `calc(100vh - ${headerHeight}px - ${navHeight}px)`;
+                    
+                    // Garantir fundo branco
+                    main.style.backgroundColor = 'white';
+                    
+                    // Verificar se o conteúdo é menor que a altura disponível
+                    const checkContentHeight = () => {
+                        const contentHeight = main.scrollHeight;
+                        const availableHeight = main.clientHeight;
+                        
+                        // Controlar a rolagem apenas quando necessário
+                        if (contentHeight <= availableHeight) {
+                            main.style.overflowY = 'hidden';
+                        } else {
+                            main.style.overflowY = 'auto';
+                        }
+                    };
+                    
+                    // Verificar inicialmente
+                    checkContentHeight();
+                    
+                    // Observar mudanças no conteúdo
+                    const observer = new MutationObserver(checkContentHeight);
+                    observer.observe(main, { childList: true, subtree: true });
+                    
+                    // Verificar quando a janela for redimensionada
+                    window.addEventListener('resize', checkContentHeight);
+                }
+            }
+        });
+        
+        // Ajustar quando a tela for redimensionada
+        window.addEventListener('resize', function() {
+            const isMobile = window.innerWidth < 768;
+            
+            if (isMobile) {
+                const header = document.querySelector('header');
+                const main = document.querySelector('main');
+                const mobileNav = document.getElementById('mobile-nav');
+                
+                if (header && main) {
+                    const headerHeight = header.offsetHeight;
+                    const navHeight = mobileNav ? mobileNav.offsetHeight : 0;
+                    
+                    main.style.maxHeight = `calc(100vh - ${headerHeight}px - ${navHeight}px)`;
+                    main.style.backgroundColor = 'white';
+                    
+                    // Verificar novamente o conteúdo
+                    const contentHeight = main.scrollHeight;
+                    const availableHeight = main.clientHeight;
+                    
+                    if (contentHeight <= availableHeight) {
+                        main.style.overflowY = 'hidden';
+                    } else {
+                        main.style.overflowY = 'auto';
+                    }
+                }
+            } else {
+                // Em desktop, resetar as alterações
+                const main = document.querySelector('main');
+                if (main) {
+                    main.style.maxHeight = '';
+                    main.style.overflowY = '';
+                    main.style.backgroundColor = '';
+                    // Restaurar a classe original para desktop
+                    if (main.classList.contains('app-screen-content')) {
+                        if (!main.classList.contains('bg-white')) {
+                            main.classList.add('bg-gray-50');
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

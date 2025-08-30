@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header-stacked">
+        <h2>Configurações do Site</h2>
+        <div class="header-actions">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-small"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+    </div>
+    <div class="login-box">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.contract_text.label }}
+                {{ form.contract_text(class="form-control", rows="15") }}
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+</div>
+{% endblock %}

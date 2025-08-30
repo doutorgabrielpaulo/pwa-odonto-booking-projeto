@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="p-4 md:p-6 space-y-3">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="aspect-video">
+            <iframe width="100%" height="100%" src="{{ room.video_url.replace('watch?v=', 'embed/') if room.video_url else 'https://www.youtube.com/embed/Z0u9_xUv0ms' }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <div class="p-3 space-y-3">
+            <h3 class="font-bold text-base">{{ room.name | upper }}</h3>
+            <p class="text-xs text-gray-500">{{ room.description }}</p>
+            <div class="p-2.5 bg-blue-50 border-l-4 border-blue-400 text-blue-800 rounded-r-lg">
+                <p class="font-semibold text-xs">ATENÇÃO! Para reservar basta clicar no horário. Não precisa confirmar.</p>
+            </div>
+            <div class="text-center py-1">
+                <p class="font-bold text-base text-gray-800">VALOR R$ {{ "%.2f"|format(room.price_2h30) }}/2H30</p>
+                <p class="font-semibold text-sm text-blue-600">VALOR R$ {{ "%.2f"|format(room.price_1h15) }}/1H15</p>
+            </div>
+            <div class="grid grid-cols-4 gap-2 text-center">
+                 <a href="{{ room.video_url or '#' }}" target="_blank" class="p-2 bg-gray-100 rounded-lg text-gray-700 hover:bg-gray-200"><i class="fas fa-video text-base mb-1"></i><span class="text-[9px] font-medium block">VIDEO</span></a>
+                 <a href="#" class="p-2 bg-gray-100 rounded-lg text-gray-700 hover:bg-gray-200"><i class="fas fa-stream text-base mb-1"></i><span class="text-[9px] font-medium block">CONTEÚDO</span></a>
+                 {% if current_user.is_admin %}
+                 <a href="{{ url_for('admin.edit_room', room_id=room.id) }}" class="p-2 bg-gray-100 rounded-lg text-gray-700 hover:bg-gray-200"><i class="fas fa-user-shield text-base mb-1"></i><span class="text-[9px] font-medium block">ADMIN</span></a>
+                 {% endif %}
+                 <a href="#" class="p-2 bg-gray-100 rounded-lg text-gray-700 hover:bg-gray-200"><i class="fas fa-car text-base mb-1"></i><span class="text-[9px] font-medium block">GARAGEM</span></a>
+            </div>
+            {% if room.admin_notice %}
+            <div class="p-2.5 bg-red-50 border-l-4 border-red-400 text-red-800 rounded-r-lg flex items-center gap-3">
+                <i class="fas fa-exclamation-triangle text-lg"></i>
+                <p class="font-bold text-xs">ATENÇÃO: {{ room.admin_notice }}</p>
+            </div>
+            {% endif %}
+            <div class="text-center font-semibold text-gray-600 pt-1">
+                <p class="text-xs">👇 {{ selected_date.strftime('%d/%m/%Y') }} - {{ selected_date.strftime('%A') | replace('Monday', 'Segunda-feira') | replace('Tuesday', 'Terça-feira') | replace('Wednesday', 'Quarta-feira') | replace('Thursday', 'Quinta-feira') | replace('Friday', 'Sexta-feira') | replace('Saturday', 'Sábado') | replace('Sunday', 'Domingo') }} 👇</p>
+            </div>
+            <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
+                <span class="font-semibold text-gray-700 text-xs">HORÁRIOS MENORES (1h15)</span>
+                <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                    <input type="checkbox" name="toggle" id="toggle-horarios" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                    <label for="toggle-horarios" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
+                </div>
+            </div>
+            <!-- Horários de 2h30 -->
+            <div id="slots-2h30" class="space-y-2">
+                {% for slot in time_slots['2h30'] %}
+                    {% if slot.status == 'available' %}
+                    <form method="POST" action="{{ url_for('main.book_room') }}" onsubmit="return confirm('Confirmar reserva neste horário?');">
+                        <input type="hidden" name="room_id" value="{{ room.id }}">
+                        <input type="hidden" name="date" value="{{ selected_date.isoformat() }}">
+                        <input type="hidden" name="start_time" value="{{ slot.start_for_form }}">
+                        <input type="hidden" name="end_time" value="{{ slot.end_for_form }}">
+                        <button type="submit" class="w-full flex items-center justify-between p-2.5 bg-green-100 text-green-800 font-semibold rounded-lg border-2 border-green-200 text-xs">
+                            <span><i class="fas fa-check-circle mr-2"></i> {{ slot.start_str }} - {{ slot.end_str }}</span>
+                            <span>DISPONÍVEL</span>
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="w-full flex items-center justify-between p-2.5 bg-red-100 text-red-800 font-semibold rounded-lg border-2 border-red-200 text-xs cursor-not-allowed">
+                        <span><i class="fas fa-times-circle mr-2"></i> {{ slot.start_str }} - {{ slot.end_str }}</span>
+                        <span>OCUPADO</span>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <!-- Horários de 1h15 -->
+            <div id="slots-1h15" class="space-y-2 hidden">
+                {% for slot in time_slots['1h15'] %}
+                    {% if slot.status == 'available' %}
+                    <form method="POST" action="{{ url_for('main.book_room') }}" onsubmit="return confirm('Confirmar reserva neste horário?');">
+                        <input type="hidden" name="room_id" value="{{ room.id }}">
+                        <input type="hidden" name="date" value="{{ selected_date.isoformat() }}">
+                        <input type="hidden" name="start_time" value="{{ slot.start_for_form }}">
+                        <input type="hidden" name="end_time" value="{{ slot.end_for_form }}">
+                        <button type="submit" class="w-full flex items-center justify-between p-2.5 bg-green-100 text-green-800 font-semibold rounded-lg border-2 border-green-200 text-xs">
+                            <span><i class="fas fa-check-circle mr-2"></i> {{ slot.start_str }} - {{ slot.end_str }}</span>
+                            <span>DISPONÍVEL</span>
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="w-full flex items-center justify-between p-2.5 bg-red-100 text-red-800 font-semibold rounded-lg border-2 border-red-200 text-xs cursor-not-allowed">
+                        <span><i class="fas fa-times-circle mr-2"></i> {{ slot.start_str }} - {{ slot.end_str }}</span>
+                        <span>OCUPADO</span>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

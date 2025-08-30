@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Reserva - Odonto Booking</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Poppins', sans-serif; background-color: #f0f2f5; }
+.app-container { max-width: 1024px; margin: auto; background-color: #f9fafb; min-height: 100vh; }
+.toggle-checkbox:checked { right: 0; border-color: #3B82F6; }
+.toggle-checkbox:checked + .toggle-label { background-color: #3B82F6; }
+.datepicker { display: none; position: absolute; top: 105%; left: 50%; transform: translateX(-50%); background: white; border-radius: 12px; padding: 10px; z-index: 100; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); width: 280px; }
+.datepicker.visible { display: block; }
+.datepicker-header { display: flex; justify-content: space-between; align-items: center; }
+.datepicker-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.datepicker-day, .datepicker-weekday { text-align: center; padding: 8px; cursor: pointer; border-radius: 50%; }
+.datepicker-weekday { font-weight: bold; font-size: 0.8em; }
+.datepicker-day:hover { background-color: #eff6ff; }
+.datepicker-day.today { background-color: #3b82f6; color: white; }
+.slot-btn {
+    @apply flex justify-between items-center w-full p-3 rounded-xl font-bold text-sm transition-all border;
+}
+.slot-btn.available {
+    @apply bg-white text-blue-600 border-blue-600 cursor-pointer;
+}
+.slot-btn.available:hover {
+    @apply bg-blue-50;
+}
+.slot-btn.occupied {
+    @apply bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed;
+}
+.slot-btn.selected {
+    @apply bg-blue-600 text-white border-blue-600;
+}
+</style>
+</head>
+<body>
+
+<div id="app" class="app-container">
+<div id="rent-screen" class="p-4 md:p-6 space-y-4">
+    <header class="text-center">
+        <img src="https://placehold.co/240x50/FFFFFF/000000?text=Odonto+Booking+Logo" class="mx-auto h-12 mb-2">
+        <h1 class="text-lg font-bold text-blue-600">SALAS DISPONÍVEIS</h1>
+    </header>
+    <div class="bg-white p-3 rounded-xl shadow-md space-y-3 sticky top-0 z-10">
+        <label class="text-xs font-semibold text-blue-600">SELECIONE UMA DATA</label>
+        <div class="relative flex gap-3">
+            <a href="#" id="prev-day-btn" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 text-xs text-center flex items-center justify-center"><i class="fas fa-arrow-left mr-1"></i> ANTERIOR</a>
+            <div id="date-display-container" class="relative w-full text-center p-2 bg-gray-100 border border-gray-200 rounded-lg font-semibold text-gray-800 text-sm cursor-pointer">
+                <span id="date-display-text"></span>
+            </div>
+            <a href="#" id="next-day-btn" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 text-xs text-center flex items-center justify-center">PRÓXIMO <i class="fas fa-arrow-right ml-1"></i></a>
+            
+            <div id="datepicker" class="datepicker">
+                <div class="datepicker-header px-2">
+                    <button id="prev-month-btn" class="px-2 py-1 rounded hover:bg-gray-100">&lt;</button>
+                    <span id="month-year" class="font-bold"></span>
+                    <button id="next-month-btn" class="px-2 py-1 rounded hover:bg-gray-100">&gt;</button>
+                </div>
+                <div class="datepicker-weekdays grid grid-cols-7 text-center text-xs font-bold text-gray-500 my-2">
+                    <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+                </div>
+                <div id="datepicker-days" class="datepicker-days"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="room-card bg-white rounded-xl shadow-lg overflow-hidden relative" data-room-id="1" data-room-name="Cadeira Margarida" data-autoclave-tutorial="https://youtube.com/embed/dQw4w9WgXcQ" data-plastificadora-tutorial="https://youtube.com/embed/3tmd-ClpJxA">
+            <button class="absolute top-2 right-2 bg-yellow-400 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg z-10"><i class="fas fa-pencil-alt mr-1"></i> Editar</button>
+            <div class="aspect-video bg-black flex items-center justify-center h-40">
+                <img src="https://img.youtube.com/vi/Z0u9_xUv0ms/mqdefault.jpg" class="w-full h-full object-cover">
+            </div>
+            <div class="p-3 space-y-3">
+                <h3 class="font-bold text-base">CADEIRA MARGARIDA</h3>
+                <p class="text-xs text-gray-500">SALA 122 - 12° ANDAR TORRE A</p>
+                <div class="slots-container space-y-2">
+                    <button class="slot-btn available" data-price="90" data-time="07h00 - 09h30"><span><i class="fas fa-check-circle mr-2"></i> 07h00 - 09h30</span><span>DISPONÍVEL</span></button>
+                    <div class="slot-btn occupied"><span><i class="fas fa-times-circle mr-2"></i> 09h30 - 12h00</span><span>OCUPADO</span></div>
+                    <button class="slot-btn available" data-price="90" data-time="12h00 - 14h30"><span><i class="fas fa-check-circle mr-2"></i> 12h00 - 14h30</span><span>DISPONÍVEL</span></button>
+                </div>
+            </div>
+        </div>
+        <div class="room-card bg-white rounded-xl shadow-lg overflow-hidden relative" data-room-id="2" data-room-name="Cadeira Tulipa" data-autoclave-tutorial="https://youtube.com/embed/L_LUpnjgPso" data-plastificadora-tutorial="https://youtube.com/embed/rokGy0huYEA">
+             <button class="absolute top-2 right-2 bg-yellow-400 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg z-10"><i class="fas fa-pencil-alt mr-1"></i> Editar</button>
+            <div class="aspect-video bg-black flex items-center justify-center h-40">
+                 <img src="https://img.youtube.com/vi/8S5l_s_2Q44/mqdefault.jpg" class="w-full h-full object-cover">
+            </div>
+            <div class="p-3 space-y-3">
+                <h3 class="font-bold text-base">CADEIRA TULIPA</h3>
+                <p class="text-xs text-gray-500">SALA 56 - 5° ANDAR TORRE A</p>
+                <div class="slots-container space-y-2">
+                    <button class="slot-btn available" data-price="90" data-time="07h00 - 09h30"><span><i class="fas fa-check-circle mr-2"></i> 07h00 - 09h30</span><span>DISPONÍVEL</span></button>
+                    <button class="slot-btn available" data-price="90" data-time="09h30 - 12h00"><span><i class="fas fa-check-circle mr-2"></i> 09h30 - 12h00</span><span>DISPONÍVEL</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="confirmation-popup" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+     <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm text-center space-y-4">
+        <i class="fas fa-question-circle text-4xl text-blue-500"></i>
+        <h3 class="text-lg font-bold text-gray-800">Confirmar Reserva?</h3>
+        <div id="confirmation-details" class="text-left bg-gray-50 p-3 rounded-lg border text-sm space-y-1">
+            </div>
+        <div class="flex gap-3 mt-4">
+            <button id="cancel-reservation-btn" class="w-full p-2.5 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 text-sm">Cancelar</button>
+            <button id="confirm-reservation-btn" class="w-full p-2.5 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 text-sm">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<div id="post-reservation-popup" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm text-center space-y-4">
+        <i class="fas fa-check-circle text-4xl text-green-500"></i>
+        <h3 class="text-lg font-bold text-gray-800">Reserva Realizada!</h3>
+        <p class="text-sm text-gray-600">Para garantir o melhor uso da sala, gostaríamos de saber:</p>
+        <div id="tutorial-questions" class="text-left space-y-3">
+            </div>
+        <div class="pt-2">
+            <button id="finish-flow-btn" class="w-full p-2.5 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 text-sm">Continuar</button>
+        </div>
+    </div>
+</div>
+
+<div id="summary-screen" class="hidden p-4 space-y-4">
+    <header class="flex items-center justify-center text-white bg-blue-600 -m-4 mb-4 p-4 shadow-md relative">
+         <button id="back-to-rent-screen" class="absolute left-4 text-xl"><i class="fas fa-arrow-left"></i></button>
+        <h1 class="font-bold text-lg">RESERVA CONFIRMADA</h1>
+    </header>
+    <div class="text-center bg-white p-6 rounded-2xl shadow-lg">
+        <i class="fas fa-calendar-check text-5xl text-green-500 mb-4"></i>
+        <h2 class="text-xl font-bold text-gray-800">Tudo Certo!</h2>
+        <p id="summary-text" class="text-sm text-gray-600 mb-6"></p>
+        
+        <div class="space-y-3">
+            <p class="text-xs font-semibold text-gray-500">PRÓXIMOS PASSOS:</p>
+            <a href="#" class="w-full flex items-center p-3 bg-gray-100 rounded-lg shadow-sm hover:bg-gray-200 transition-colors border">
+                <i class="fas fa-microscope w-6 text-center text-lg text-blue-600"></i><span class="ml-3 font-semibold text-sm text-gray-800">Alugar Equipamentos</span>
+            </a>
+            <a href="#" class="w-full flex items-center p-3 bg-gray-100 rounded-lg shadow-sm hover:bg-gray-200 transition-colors border">
+                <i class="fas fa-car w-6 text-center text-lg text-blue-600"></i><span class="ml-3 font-semibold text-sm text-gray-800">Reservar Vaga de Garagem</span>
+            </a>
+        </div>
+        <div class="flex items-center gap-2 mt-4 text-xs text-gray-500 justify-center">
+            <input type="checkbox" id="dont-ask-again">
+            <label for="dont-ask-again">Não me perguntar sobre equipamentos/garagem novamente.</label>
+        </div>
+    </div>
+</div>
+</div>
+
+<div id="floating-confirm-bar" class="hidden sticky bottom-4 z-20 w-full">
+    <div class="max-w-md mx-auto bg-white p-3 rounded-xl shadow-2xl flex justify-between items-center">
+        <div class="text-left">
+            <p class="text-xs text-gray-500">Total a Pagar:</p>
+            <p id="total-price-text" class="font-bold text-lg text-green-600"></p>
+        </div>
+        <button id="proceed-to-reserve-btn" class="p-3 px-6 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 text-sm">Reservar</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    let currentDate = new Date();
+    let currentSlot = null;
+
+    // --- ELEMENTOS DO DOM ---
+    const dateDisplayText = document.getElementById('date-display-text');
+    const prevDayBtn = document.getElementById('prev-day-btn');
+    const nextDayBtn = document.getElementById('next-day-btn');
+    const dateDisplayContainer = document.getElementById('date-display-container');
+    const datePickerElement = document.getElementById('datepicker');
+    const monthYearElement = document.getElementById('month-year');
+    const daysContainer = document.getElementById('datepicker-days');
+    const prevMonthBtn = document.getElementById('prev-month-btn');
+    const nextMonthBtn = document.getElementById('next-month-btn');
+
+    const confirmationPopup = document.getElementById('confirmation-popup');
+    const confirmationDetails = document.getElementById('confirmation-details');
+    const cancelReservationBtn = document.getElementById('cancel-reservation-btn');
+    const confirmReservationBtn = document.getElementById('confirm-reservation-btn');
+    
+    const postReservationPopup = document.getElementById('post-reservation-popup');
+    const finishFlowBtn = document.getElementById('finish-flow-btn');
+    
+    const rentScreen = document.getElementById('rent-screen');
+    const summaryScreen = document.getElementById('summary-screen');
+    const backToRentScreen = document.getElementById('back-to-rent-screen');
+
+    // --- FUNÇÕES DE UTILIDADE ---
+    function formatDate(date) {
+        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function updateDateDisplay() {
+        dateDisplayText.textContent = formatDate(currentDate);
+        renderCalendar(currentDate.getFullYear(), currentDate.getMonth());
+    }
+
+    function renderCalendar(year, month) {
+        daysContainer.innerHTML = '';
+        monthYearElement.textContent = new Date(year, month).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+        
+        const firstDayOfMonth = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            daysContainer.appendChild(document.createElement('div'));
+        }
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayElement = document.createElement('div');
+            dayElement.textContent = day;
+            dayElement.classList.add('datepicker-day');
+            if (day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()) {
+                dayElement.classList.add('today');
+            }
+            dayElement.addEventListener('click', () => {
+                currentDate = new Date(year, month, day);
+                updateDateDisplay();
+                datePickerElement.classList.remove('visible');
+            });
+            daysContainer.appendChild(dayElement);
+        }
+    }
+
+    // --- EVENT LISTENERS ---
+    prevDayBtn.addEventListener('click', (e) => { e.preventDefault(); currentDate.setDate(currentDate.getDate() - 1); updateDateDisplay(); });
+    nextDayBtn.addEventListener('click', (e) => { e.preventDefault(); currentDate.setDate(currentDate.getDate() + 1); updateDateDisplay(); });
+
+    dateDisplayContainer.addEventListener('click', () => datePickerElement.classList.toggle('visible'));
+    prevMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); updateDateDisplay(); });
+    nextMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); updateDateDisplay(); });
+
+    // Lógica para selecionar o slot e mostrar o pop-up de confirmação
+    document.querySelectorAll('.slot-btn.available').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Desmarca qualquer slot previamente selecionado
+            if (currentSlot) {
+                currentSlot.classList.remove('selected');
+                currentSlot.innerHTML = `<span><i class="fas fa-check-circle mr-2"></i> ${currentSlot.dataset.time}</span><span>DISPONÍVEL</span>`;
+            }
+
+            currentSlot = btn; // Armazena o botão que foi clicado
+            currentSlot.classList.add('selected');
+            currentSlot.innerHTML = `<span><i class="fas fa-user-check mr-2"></i> ${currentSlot.dataset.time}</span><span class="text-xs">SELECIONADO P/ VOCÊ</span>`;
+
+            const roomCard = btn.closest('.room-card');
+            const roomName = roomCard.dataset.roomName;
+            const time = btn.dataset.time;
+            const price = parseFloat(btn.dataset.price).toFixed(2);
+            
+            confirmationDetails.innerHTML = `
+                <p><strong>Sala:</strong> ${roomName}</p>
+                <p><strong>Data:</strong> ${formatDate(currentDate)}</p>
+                <p><strong>Horário:</strong> ${time}</p>
+                <div class="border-t my-2"></div>
+                <p class="flex justify-between"><strong>Total:</strong> <span class="font-bold text-green-600">R$ ${price}</span></p>
+            `;
+            confirmationPopup.classList.remove('hidden');
+        });
+    });
+
+    cancelReservationBtn.addEventListener('click', () => {
+        confirmationPopup.classList.add('hidden');
+        if (currentSlot) {
+            currentSlot.classList.remove('selected');
+            currentSlot.innerHTML = `<span><i class="fas fa-check-circle mr-2"></i> ${currentSlot.dataset.time}</span><span>DISPONÍVEL</span>`;
+        }
+        currentSlot = null;
+    });
+
+    confirmReservationBtn.addEventListener('click', () => {
+        confirmationPopup.classList.add('hidden');
+        
+        // Simula a reserva
+        if (currentSlot) {
+            currentSlot.classList.remove('available', 'selected');
+            currentSlot.classList.add('occupied');
+            currentSlot.innerHTML = `<span><i class="fas fa-user-check mr-2"></i> ${currentSlot.dataset.time}</span><span class="text-xs">RESERVADO P/ VOCÊ</span>`;
+            currentSlot.disabled = true;
+        }
+
+        // Prepara e mostra o pop-up de tutoriais
+        const roomCard = currentSlot.closest('.room-card');
+        const tutorialQuestionsContainer = document.getElementById('tutorial-questions');
+        tutorialQuestionsContainer.innerHTML = `
+            <div class="bg-gray-50 p-3 rounded-lg">
+                <p class="font-semibold text-sm mb-2">Você já sabe utilizar a Autoclave desta sala?</p>
+                <div class="flex gap-2">
+                    <button class="tutorial-choice w-full p-2 bg-white border rounded-lg text-xs font-semibold">Sim</button>
+                    <a href="${roomCard.dataset.autoclaveTutorial}" target="_blank" class="tutorial-choice w-full p-2 bg-blue-100 border text-blue-800 rounded-lg text-xs font-semibold text-center">Não, ver tutorial</a>
+                </div>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-lg">
+                <p class="font-semibold text-sm mb-2">Você já sabe utilizar a Plastificadora?</p>
+                <div class="flex gap-2">
+                    <button class="tutorial-choice w-full p-2 bg-white border rounded-lg text-xs font-semibold">Sim</button>
+                    <a href="${roomCard.dataset.plastificadoraTutorial}" target="_blank" class="tutorial-choice w-full p-2 bg-blue-100 border text-blue-800 rounded-lg text-xs font-semibold text-center">Não, ver tutorial</a>
+                </div>
+            </div>
+        `;
+        postReservationPopup.classList.remove('hidden');
+    });
+
+    finishFlowBtn.addEventListener('click', () => {
+        postReservationPopup.classList.add('hidden');
+        document.getElementById('summary-text').innerHTML = `Sua reserva para a <strong>${currentSlot.closest('.room-card').dataset.roomName}</strong> no dia <strong>${formatDate(currentDate)}</strong> das <strong>${currentSlot.dataset.time}</strong> está confirmada.`;
+        rentScreen.classList.add('hidden');
+        summaryScreen.classList.remove('hidden');
+    });
+
+    backToRentScreen.addEventListener('click', () => {
+        summaryScreen.classList.add('hidden');
+        rentScreen.classList.remove('hidden');
+        // Não limpa o currentSlot para que a reserva anterior permaneça no estado "ocupado"
+    });
+
+    document.querySelectorAll('.tutorial-choice').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.tagName !== 'A') { // Só altera o estilo se não for um link
+                const parent = btn.parentElement;
+                parent.querySelectorAll('.tutorial-choice').forEach(b => b.classList.remove('bg-blue-100', 'border-blue-300', 'text-blue-800'));
+                parent.querySelectorAll('.tutorial-choice').forEach(b => b.classList.add('bg-white', 'border-gray-300'));
+                btn.classList.add('bg-blue-100', 'border-blue-300', 'text-blue-800');
+            }
+        });
+    });
+
+    // --- INICIALIZAÇÃO ---
+    updateDateDisplay();
+});
+</script>
+</body>
+</html>
