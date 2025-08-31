@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, session
 from flask_login import login_required, current_user, logout_user, login_user
-from app.models.user import Room, Reservation, Tutorial, SiteSettings, User, RentableEquipment, EquipmentReservation, ApiLog, UserTutorialPreference, TempLock, ParkingSpot, ParkingReservation, db
-from app import db
+from app.models.user import Room, Reservation, Tutorial, SiteSettings, User, RentableEquipment, EquipmentReservation, ApiLog, UserTutorialPreference, TempLock, ParkingSpot, ParkingReservation, RoomEquipment, db
+from .. import db
 from datetime import datetime, timedelta, date, time
 from functools import wraps
 from sqlalchemy import func

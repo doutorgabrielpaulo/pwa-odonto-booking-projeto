@@ -1,62 +1,105 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="p-4 md:p-6 space-y-6">
-    <div>
-    <img src="{{ url_for('static', filename='img/banner.gif') }}" alt="Banner Odonto Booking" class="w-full max-w-[300px] h-auto mx-auto">
-        <h1 class="text-xl font-bold text-gray-800">Painel do Administrador</h1>
-        <p class="text-sm text-gray-600">Bem-vindo, {{ current_user.nome_completo.split()[0] }}.</p>
-    </div>
 
-    <div>
-        <h2 class="text-base font-semibold text-gray-700 mb-2 border-b pb-2">Ações como Usuário</h2>
-        <div class="grid grid-cols-4 gap-2 text-center">
-            <a href="{{ url_for('main.rent_room') }}" class="p-2 bg-gray-100 rounded-lg text-gray-800 hover:bg-gray-200">
-                <i class="fas fa-tooth text-xl mb-1 text-blue-600"></i>
-                <span class="text-[10px] font-medium block">Alugar Salas</span>
-            </a>
-            <a href="{{ url_for('main.my_reservations') }}" class="p-2 bg-gray-100 rounded-lg text-gray-800 hover:bg-gray-200">
-                <i class="fas fa-calendar-alt text-xl mb-1 text-blue-600"></i>
-                <span class="text-[10px] font-medium block">Minhas Reservas</span>
-            </a>
-            <a href="{{ url_for('main.rent_equipment') }}" class="p-2 bg-gray-100 rounded-lg text-gray-800 hover:bg-gray-200">
-                <i class="fas fa-microscope text-xl mb-1 text-blue-600"></i>
-                <span class="text-[10px] font-medium block">Equipamentos</span>
-            </a>
-            <a href="{{ url_for('admin.garage_report_info') }}" class="p-2 bg-blue-100 rounded-lg text-gray-800 hover:bg-blue-200">
-                <i class="fas fa-car text-xl mb-1 text-blue-600"></i>
-                <span class="text-[10px] font-medium block">Garagem</span>
-            </a>
-        </div>
-    </div>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odonto Booking - Painel do Administrador</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; }
+    </style>
+</head>
+<body>
+    <div class="flex h-screen bg-gray-100">
+        <aside class="flex flex-col bg-white w-64 p-4 shadow-md">
+            <img src="https://odonto-booking.s3.amazonaws.com/logo-ob.png" alt="Logo Odonto Booking" class="h-10 mb-6">
+            <nav class="flex-1">
+                <a href="/admin/dashboard" class="flex items-center p-3 text-gray-700 bg-gray-200 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-200">
+                    <i class="fas fa-home mr-3"></i>
+                    Início
+                </a>
+                <a href="/admin/users" class="flex items-center p-3 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 mt-2">
+                    <i class="fas fa-users mr-3"></i>
+                    Usuários
+                </a>
+                <a href="/admin/rooms" class="flex items-center p-3 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 mt-2">
+                    <i class="fas fa-chair mr-3"></i>
+                    Salas
+                </a>
+                <a href="/admin/auditoria" class="flex items-center p-3 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 mt-2">
+                    <i class="fas fa-history mr-3"></i>
+                    Auditoria
+                </a>
+            </nav>
+        </aside>
 
-    <div>
-        <h2 class="text-base font-semibold text-gray-700 mb-2 border-b pb-2">Ferramentas de Administração</h2>
-        <div class="grid grid-cols-4 gap-2 text-center">
-            <a href="{{ url_for('admin.view_reservations') }}" class="p-2 bg-blue-100 rounded-lg text-gray-800 hover:bg-blue-200">
-                <i class="fas fa-calendar-day text-xl mb-1 text-blue-600"></i>
-                <span class="text-[10px] font-medium block">Ver Reservas</span>
-            </a>
-            <a href="{{ url_for('admin.users_list') }}" class="p-2 bg-blue-100 rounded-lg text-gray-800 hover:bg-blue-200">
-                <i class="fas fa-users text-xl mb-1 text-blue-600"></i>
-                <span class="text-[10px] font-medium block">Usuários</span>
-            </a>
-            <a href="{{ url_for('admin.rooms_list') }}" class="p-2 bg-blue-100 rounded-lg text-gray-800 hover:bg-blue-200">
-                <i class="fas fa-cogs text-xl mb-1 text-blue-600"></i>
-                <span class="text-[10px] font-medium block">Salas</span>
-            </a>
-            <a href="{{ url_for('admin.financial_panel') }}" class="p-2 bg-blue-100 rounded-lg text-gray-800 hover:bg-blue-200">
-                <i class="fas fa-chart-line text-xl mb-1 text-blue-600"></i>
-                <span class="text-[10px] font-medium block">Financeiro</span>
-            </a>
-            <a href="{{ url_for('admin.site_settings') }}" class="p-2 bg-blue-100 rounded-lg text-gray-800 hover:bg-blue-200">
-                <i class="fas fa-sliders-h text-xl mb-1 text-blue-600"></i>
-                <span class="text-[10px] font-medium block">Configurações</span>
-            </a>
-            <!-- ADICIONE ESTE BLOCO NO FINAL DO ARQUIVO -->
-<div class="text-center mt-6">
-    <a href="{{ url_for('auth.logout') }}" class="text-sm text-gray-500 hover:text-red-600 hover:underline">Sair da Conta</a>
-</div>
-        </div>
+        <main class="flex-1 p-6 overflow-y-auto">
+            <header class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">Painel do Administrador</h1>
+                <div class="flex items-center space-x-4">
+                    <a href="#" class="text-gray-600 hover:text-blue-600 transition-colors duration-200">
+                        <i class="fas fa-bell text-xl"></i>
+                    </a>
+                    <div class="relative">
+                        <button class="flex items-center text-sm focus:outline-none">
+                            <span class="mr-2 text-gray-700">Olá, Gabriel!</span>
+                            <img class="h-9 w-9 rounded-full object-cover" src="https://via.placeholder.com/150" alt="Avatar">
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <a href="/admin/manage_users" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="p-4 bg-blue-100 rounded-full mb-4">
+                        <i class="fas fa-users text-blue-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-1">Gerenciar Usuários</h3>
+                    <p class="text-gray-500 text-sm">Controle de acesso, score e dados.</p>
+                </a>
+
+                <a href="/admin/manage_rooms" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="p-4 bg-green-100 rounded-full mb-4">
+                        <i class="fas fa-chair text-green-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-1">Gerenciar Salas</h3>
+                    <p class="text-gray-500 text-sm">Adicionar, editar e ativar cadeiras.</p>
+                </a>
+
+                <a href="/admin/manage_equipment" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="p-4 bg-yellow-100 rounded-full mb-4">
+                        <i class="fas fa-tools text-yellow-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-1">Gerenciar Equipamentos</h3>
+                    <p class="text-gray-500 text-sm">Controle de itens para aluguel.</p>
+                </a>
+
+                <a href="/admin/manage_garage" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="p-4 bg-red-100 rounded-full mb-4">
+                        <i class="fas fa-car text-red-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-1">Gerenciar Garagem</h3>
+                    <p class="text-gray-500 text-sm">Vagas e status de estacionamento.</p>
+                </a>
+
+                <a href="/admin/finance" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="p-4 bg-purple-100 rounded-full mb-4">
+                        <i class="fas fa-chart-line text-purple-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-1">Painel Financeiro</h3>
+                    <p class="text-gray-500 text-sm">Gráficos de lucro e despesa.</p>
+                </a>
+            </div>
+        </main>
     </div>
-</div>
+</body>
+</html>
 {% endblock %}

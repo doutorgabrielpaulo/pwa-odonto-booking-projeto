@@ -2,11 +2,10 @@
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from flask_login import login_user, logout_user, current_user
-from app import db
 from app.models.user import User, SiteSettings
 from app.services.validation_service import verify_dentist_credentials, log_event
 from markupsafe import Markup
-
+from app.extensions import db
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField
 from wtforms.fields import DateField
