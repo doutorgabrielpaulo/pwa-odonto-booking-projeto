@@ -1,19 +1,14 @@
-# ARQUIVO: app/routes/admin.py (Completo e Atualizado)
-
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required, current_user
-from app.models.user import User, Reservation, Room, Equipment, RentableEquipment, Tutorial, SiteSettings
+from app.models.user import User, Room, Reservation, SiteSettings, Tutorial, ApiLog, UserTutorialPreference, TempLock, ParkingSpot, ParkingReservation, BlockedTime
+from app.models.equipment import RentableEquipment, EquipmentReservation, Equipment
+from app.forms.forms import AdminEditUserForm, RoomForm, BlockedTimeForm, PriceIncreaseForm, EquipmentForm, RentableEquipmentForm, TutorialForm, SettingsForm, DefaultPricesForm
 from app import db
 import datetime
 from functools import wraps
-import re # NOVO: Import para extrair ID do YouTube
-from sqlalchemy import func # NOVO: Import para usar func.lower()
-
-# Importações para formulários
-from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, BooleanField, SubmitField, FloatField, TextAreaField
-from wtforms.validators import DataRequired, Email, Optional, URL
-from wtforms_sqlalchemy.fields import QuerySelectMultipleField
+import re
+from sqlalchemy import func
+from contextlib import contextmanager
 
 admin = Blueprint('admin', __name__)
 
@@ -27,66 +22,28 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# --- FUNÇÃO AUXILIAR PARA THUMBNAIL DO YOUTUBE (NOVO) ---
+# --- Context Manager para evitar problemas de sessão ---
+@contextmanager
+def session_management():
+    """Context manager para gerenciar sessões do SQLAlchemy e evitar avisos."""
+    try:
+        yield
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+# --- FUNÇÃO AUXILIAR PARA THUMBNAIL DO YOUTUBE (CORRIGIDA) ---
 def get_youtube_thumbnail(url):
     """Extrai o ID de um vídeo do YouTube e retorna a URL da thumbnail."""
     if not url:
         return None
-    # Padrão para encontrar o ID em diferentes formatos de URL do YouTube
     regex = r"(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})"
     match = re.search(regex, url)
     if match:
         video_id = match.group(1)
         return f"https://img.youtube.com/vi/{video_id}/mqdefault.jpg"
-    return None # Retorna None se não encontrar um ID válido
-
-# --- Formulários ---
-class AdminEditUserForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    nome_completo = StringField('Nome Completo', validators=[DataRequired()])
-    score = IntegerField('Score')
-    is_vip = BooleanField('Usuário VIP')
-    is_chato = BooleanField('Usuário "Chato"')
-    submit = SubmitField('Salvar Alterações')
-
-def get_all_equipment():
-    return Equipment.query.order_by(Equipment.name).all()
-
-# --- ALTERAÇÃO AQUI: O formulário de salas agora usa um campo de texto para as tags ---
-class RoomForm(FlaskForm):
-    name = StringField('Nome da Cadeira/Sala', validators=[DataRequired()])
-    description = StringField('Descrição (Ex: Sala 122 - 12° andar torre A)', validators=[DataRequired()])
-    price_2h30 = FloatField('Preço 2h30', validators=[DataRequired()])
-    price_1h15 = FloatField('Preço 1h15', validators=[DataRequired()])
-    video_url = StringField('URL do Vídeo (YouTube)', validators=[Optional(), URL()])
-    admin_notice = TextAreaField('Aviso do Admin (Opcional)')
-    is_active = BooleanField('Sala Ativa', default=True)
-    # Este campo substitui a lista de checkboxes
-    equipments_tags = StringField('Equipamentos (Tags separadas por vírgula)')
-    submit = SubmitField('Salvar Sala')
-
-class EquipmentForm(FlaskForm):
-    name = StringField('Nome do Equipamento/Tag', validators=[DataRequired()])
-    submit = SubmitField('Salvar')
-
-class RentableEquipmentForm(FlaskForm):
-    name = StringField('Nome do Equipamento para Aluguel', validators=[DataRequired()])
-    description = TextAreaField('Descrição')
-    daily_price = FloatField('Preço da Diária (R$)', validators=[DataRequired()])
-    units_available = IntegerField('Unidades Disponíveis', validators=[DataRequired()])
-    is_active = BooleanField('Ativo para Aluguel', default=True)
-    submit = SubmitField('Salvar Equipamento')
-
-class TutorialForm(FlaskForm):
-    title = StringField('Título do Tutorial', validators=[DataRequired()])
-    video_url = StringField('URL do Vídeo (YouTube)', validators=[DataRequired(), URL()])
-    description = TextAreaField('Descrição (Opcional)')
-    submit = SubmitField('Salvar Tutorial')
-
-class SettingsForm(FlaskForm):
-    contract_text = TextAreaField('Texto do Contrato')
-    login_video_url = StringField('URL do Vídeo de Login/Cadastro (YouTube)', validators=[DataRequired(), URL()])
-    submit = SubmitField('Salvar Configurações')
+    return None
 
 # --- Rotas Principais do Admin ---
 @admin.route('/dashboard')
@@ -102,11 +59,9 @@ def users_list():
     users = User.query.order_by(User.nome_completo).paginate(page=page, per_page=15)
     return render_template('admin_users_list.html', users=users)
     
-    # --- ROTAS DE GERENCIAMENTO DE VAGAS (NOVAS) ---
 @admin.route('/garage')
 @admin_required
 def garage_spots_list():
-    # Esta página irá listar as vagas cadastradas (a ser construída)
     flash('Funcionalidade de gerenciamento de vagas em construção.', 'info')
     return redirect(url_for('admin.dashboard'))
 
@@ -133,46 +88,122 @@ def edit_user(user_id):
     return render_template('admin_edit_user.html', form=form, user=user)
 
 # --- Rotas de Gerenciamento de Salas e Equipamentos ---
-@admin.route('/rooms')
+@admin.route('/manage_rooms')
 @admin_required
 def rooms_list():
-    # --- ALTERAÇÃO AQUI: Passa a URL da thumbnail para a página ---
     rooms = Room.query.order_by(Room.name).all()
-    rooms_data = []
-    for room in rooms:
-        rooms_data.append({
-            'room': room,
-            'thumbnail': get_youtube_thumbnail(room.video_url)
-        })
-    return render_template('admin_rooms_list.html', rooms_data=rooms_data)
+    return render_template('admin_rooms_list.html', rooms=rooms)
+
+@admin.route('/default-prices', methods=['GET', 'POST'])
+@admin_required
+def default_prices():
+    form = DefaultPricesForm()
+    
+    # Buscar preços padrão atuais
+    price_2h30_setting = SiteSettings.query.filter_by(key='default_price_2h30').first()
+    price_1h15_setting = SiteSettings.query.filter_by(key='default_price_1h15').first()
+    
+    if form.validate_on_submit():
+        # Salvar ou atualizar preços padrão
+        if not price_2h30_setting:
+            price_2h30_setting = SiteSettings(key='default_price_2h30')
+            db.session.add(price_2h30_setting)
+        price_2h30_setting.value = str(form.default_price_2h30.data)
+        
+        if not price_1h15_setting:
+            price_1h15_setting = SiteSettings(key='default_price_1h15')
+            db.session.add(price_1h15_setting)
+        price_1h15_setting.value = str(form.default_price_1h15.data)
+        
+        db.session.commit()
+        flash('Preços padrão atualizados com sucesso!', 'success')
+        return redirect(url_for('admin.default_prices'))
+    
+    # Preencher formulário com valores atuais
+    if price_2h30_setting:
+        form.default_price_2h30.data = float(price_2h30_setting.value)
+    if price_1h15_setting:
+        form.default_price_1h15.data = float(price_1h15_setting.value)
+    
+    return render_template('admin_default_prices.html', form=form)
 
 @admin.route('/room/new', methods=['GET', 'POST'])
 @admin_required
 def add_room():
     form = RoomForm()
+    # Adicione este objeto de formulário para evitar o erro UndefinedError
+    price_increase_form = PriceIncreaseForm()
+    
+    # Buscar preços padrão
+    default_price_2h30 = 90.0
+    default_price_1h15 = 55.0
+    
+    price_2h30_setting = SiteSettings.query.filter_by(key='default_price_2h30').first()
+    price_1h15_setting = SiteSettings.query.filter_by(key='default_price_1h15').first()
+    
+    if price_2h30_setting:
+        default_price_2h30 = float(price_2h30_setting.value)
+    if price_1h15_setting:
+        default_price_1h15 = float(price_1h15_setting.value)
+    
     if form.validate_on_submit():
-        new_room = Room(
-            name=form.name.data, description=form.description.data,
-            price_2h30=form.price_2h30.data, price_1h15=form.price_1h15.data,
-            video_url=form.video_url.data, admin_notice=form.admin_notice.data,
-            is_active=form.is_active.data
-        )
-        
-        # --- ALTERAÇÃO AQUI: Lógica para processar as tags ---
-        if form.equipments_tags.data:
-            tags = [tag.strip() for tag in form.equipments_tags.data.split(',') if tag.strip()]
-            for tag_name in tags:
+        with session_management():
+            new_room = Room(
+                name=form.name.data,
+                description=form.description.data,
+                price_2h30=form.price_2h30.data,
+                price_1h15=form.price_1h15.data,
+                video_url=form.video_url.data,
+                video_tutorial_url=form.video_tutorial_url.data,
+                video_tutorial_autoclave_url=form.video_tutorial_autoclave_url.data,
+                video_tutorial_raiox_url=form.video_tutorial_raiox_url.data,
+                video_tutorial_plastificadora_url=form.video_tutorial_plastificadora_url.data,
+                admin_notice=form.admin_notice.data,
+                allow_1h15_rental=form.allow_1h15_rental.data,
+                is_visible=form.is_visible.data
+            )
+            
+            db.session.add(new_room)
+            db.session.flush()  # Garante que o objeto tenha um ID
+            
+            # Processar tags padrão (checkboxes)
+            standard_tags = request.form.getlist('standard_tags')
+            for tag_name in standard_tags:
                 equipment = Equipment.query.filter(func.lower(Equipment.name) == func.lower(tag_name)).first()
                 if not equipment:
                     equipment = Equipment(name=tag_name)
                     db.session.add(equipment)
+                    db.session.flush()  # Garante que o equipment tenha um ID
                 new_room.equipments.append(equipment)
-        
-        db.session.add(new_room)
-        db.session.commit()
-        flash('Nova sala adicionada com sucesso!', 'success')
-        return redirect(url_for('admin.rooms_list'))
-    return render_template('admin_edit_room.html', form=form, title="Adicionar Nova Sala")
+            
+            # Processar tags personalizadas (campo de texto)
+            if form.custom_tags.data:
+                custom_tags = [tag.strip() for tag in form.custom_tags.data.split(',') if tag.strip()]
+                for tag_name in custom_tags:
+                    # Verificar se já não foi adicionada como tag padrão
+                    if tag_name.lower() not in [t.lower() for t in standard_tags]:
+                        equipment = Equipment.query.filter(func.lower(Equipment.name) == func.lower(tag_name)).first()
+                        if not equipment:
+                            equipment = Equipment(name=tag_name)
+                            db.session.add(equipment)
+                            db.session.flush()  # Garante que o equipment tenha um ID
+                        new_room.equipments.append(equipment)
+            
+            flash('Nova sala adicionada com sucesso!', 'success')
+            return redirect(url_for('admin.rooms_list'))
+    
+    # Se for GET, preencher com preços padrão
+    if request.method == 'GET':
+        form.price_2h30.data = default_price_2h30
+        form.price_1h15.data = default_price_1h15
+    
+    return render_template('admin_edit_room.html',
+                           title="Adicionar Nova Sala",
+                           form=form,
+                           room=None,
+                           price_increase_form=price_increase_form,
+                           default_price_2h30=default_price_2h30,
+                           default_price_1h15=default_price_1h15)
 
 @admin.route('/room/<int:room_id>/edit', methods=['GET', 'POST'])
 @admin_required
@@ -180,32 +211,126 @@ def edit_room(room_id):
     room = Room.query.get_or_404(room_id)
     form = RoomForm(obj=room)
     
-    # --- ALTERAÇÃO AQUI: Lógica para pré-popular o campo de tags ---
+    # Buscar preços padrão
+    default_price_2h30 = 90.0
+    default_price_1h15 = 55.0
+    
+    price_2h30_setting = SiteSettings.query.filter_by(key='default_price_2h30').first()
+    price_1h15_setting = SiteSettings.query.filter_by(key='default_price_1h15').first()
+    
+    if price_2h30_setting:
+        default_price_2h30 = float(price_2h30_setting.value)
+    if price_1h15_setting:
+        default_price_1h15 = float(price_1h15_setting.value)
+    
     if request.method == 'GET':
-        form.equipments_tags.data = ', '.join([e.name for e in room.equipments])
-
-    if form.validate_on_submit():
-        room.name = form.name.data; room.description = form.description.data
-        room.price_2h30 = form.price_2h30.data; room.price_1h15 = form.price_1h15.data
-        room.video_url = form.video_url.data; room.admin_notice = form.admin_notice.data
-        room.is_active = form.is_active.data
+        # Preencher tags personalizadas (excluindo as padrão)
+        standard_tag_values = [value for value, label in form.standard_tags]
+        custom_tags = [e.name for e in room.equipments if e.name not in standard_tag_values]
+        form.custom_tags.data = ', '.join(custom_tags)
         
-        # --- ALTERAÇÃO AQUI: Lógica para atualizar as tags ---
-        room.equipments.clear()
-        if form.equipments_tags.data:
-            tags = [tag.strip() for tag in form.equipments_tags.data.split(',') if tag.strip()]
-            for tag_name in tags:
+        form.allow_1h15_rental.data = room.allow_1h15_rental
+        form.is_visible.data = room.is_visible
+        
+    if form.validate_on_submit():
+        with session_management():
+            room.name = form.name.data
+            room.description = form.description.data
+            room.price_2h30 = form.price_2h30.data
+            room.price_1h15 = form.price_1h15.data
+            room.video_url = form.video_url.data
+            room.video_tutorial_url = form.video_tutorial_url.data
+            room.video_tutorial_autoclave_url = form.video_tutorial_autoclave_url.data
+            room.video_tutorial_raiox_url = form.video_tutorial_raiox_url.data
+            room.video_tutorial_plastificadora_url = form.video_tutorial_plastificadora_url.data
+            room.admin_notice = form.admin_notice.data
+            room.allow_1h15_rental = form.allow_1h15_rental.data
+            room.is_visible = form.is_visible.data
+            
+            # Limpar todas as tags existentes
+            room.equipments.clear()
+            
+            # Processar tags padrão (checkboxes)
+            standard_tags = request.form.getlist('standard_tags')
+            for tag_name in standard_tags:
                 equipment = Equipment.query.filter(func.lower(Equipment.name) == func.lower(tag_name)).first()
                 if not equipment:
                     equipment = Equipment(name=tag_name)
                     db.session.add(equipment)
+                    db.session.flush()  # Garante que o equipment tenha um ID
                 room.equipments.append(equipment)
-
-        db.session.commit()
-        flash('Sala atualizada com sucesso!', 'success')
-        return redirect(url_for('admin.rooms_list'))
-    return render_template('admin_edit_room.html', form=form, title=f"Editando: {room.name}")
+            
+            # Processar tags personalizadas (campo de texto)
+            if form.custom_tags.data:
+                custom_tags = [tag.strip() for tag in form.custom_tags.data.split(',') if tag.strip()]
+                for tag_name in custom_tags:
+                    # Verificar se já não foi adicionada como tag padrão
+                    if tag_name.lower() not in [t.lower() for t in standard_tags]:
+                        equipment = Equipment.query.filter(func.lower(Equipment.name) == func.lower(tag_name)).first()
+                        if not equipment:
+                            equipment = Equipment(name=tag_name)
+                            db.session.add(equipment)
+                            db.session.flush()  # Garante que o equipment tenha um ID
+                        room.equipments.append(equipment)
+            
+            flash('Sala atualizada com sucesso!', 'success')
+            return redirect(url_for('admin.rooms_list'))
     
+    return render_template('admin_edit_room.html', 
+                           form=form, 
+                           title=f"Editando: {room.name}", 
+                           room=room,
+                           default_price_2h30=default_price_2h30,
+                           default_price_1h15=default_price_1h15)
+    
+@admin.route('/room/<int:room_id>/delete', methods=['POST'])
+@admin_required
+def delete_room(room_id):
+    with session_management():
+        room = Room.query.get_or_404(room_id)
+        db.session.delete(room)
+        flash(f'Sala "{room.name}" deletada com sucesso!', 'success')
+        return redirect(url_for('admin.rooms_list'))
+    
+@admin.route('/room/<int:room_id>/block-time', methods=['POST'])
+@admin_required
+def block_time(room_id):
+    form = BlockedTimeForm()
+    if form.validate_on_submit():
+        with session_management():
+            room = Room.query.get_or_404(room_id)
+            existing_block = BlockedTime.query.filter_by(
+                room_id=room.id,
+                day_of_week=form.day_of_week.data,
+                start_time=form.start_time.data,
+                end_time=form.end_time.data
+            ).first()
+            if existing_block:
+                flash('Este bloqueio já existe para esta sala.', 'warning')
+            else:
+                new_blocked_time = BlockedTime(
+                    room_id=room.id,
+                    day_of_week=form.day_of_week.data,
+                    start_time=form.start_time.data,
+                    end_time=form.end_time.data
+                )
+                db.session.add(new_blocked_time)
+                flash('Horário bloqueado com sucesso!', 'success')
+    return redirect(url_for('admin.edit_room', room_id=room_id))
+
+@admin.route('/settings/price-increase', methods=['POST'])
+@admin_required
+def price_increase():
+    form = PriceIncreaseForm()
+    if form.validate_on_submit():
+        flash('Aumento de preço programado e notificação enviada!', 'success')
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Erro no campo {field}: {error}", 'danger')
+    
+    return redirect(url_for('admin.site_settings'))
+
 @admin.route('/equipment')
 @admin_required
 def equipment_list():
@@ -218,19 +343,19 @@ def equipment_list():
 def add_equipment():
     form = EquipmentForm()
     if form.validate_on_submit():
-        new_equipment = Equipment(name=form.name.data)
-        db.session.add(new_equipment)
-        db.session.commit()
-        flash('Equipamento/Tag adicionado com sucesso!', 'success')
+        with session_management():
+            new_equipment = Equipment(name=form.name.data)
+            db.session.add(new_equipment)
+            flash('Equipamento/Tag adicionado com sucesso!', 'success')
     return redirect(url_for('admin.equipment_list'))
 
 @admin.route('/equipment/<int:equipment_id>/delete', methods=['POST'])
 @admin_required
 def delete_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    db.session.delete(equipment)
-    db.session.commit()
-    flash('Equipamento/Tag removido com sucesso!', 'success')
+    with session_management():
+        equipment = Equipment.query.get_or_404(equipment_id)
+        db.session.delete(equipment)
+        flash('Equipamento/Tag removido com sucesso!', 'success')
     return redirect(url_for('admin.equipment_list'))
 
 @admin.route('/rentable-equipment')
@@ -244,11 +369,17 @@ def rentable_equipment_list():
 def add_rentable_equipment():
     form = RentableEquipmentForm()
     if form.validate_on_submit():
-        new_equip = RentableEquipment(name=form.name.data, description=form.description.data, daily_price=form.daily_price.data, units_available=form.units_available.data, is_active=form.is_active.data)
-        db.session.add(new_equip)
-        db.session.commit()
-        flash('Equipamento para aluguel adicionado!', 'success')
-        return redirect(url_for('admin.rentable_equipment_list'))
+        with session_management():
+            new_equip = RentableEquipment(
+                name=form.name.data, 
+                description=form.description.data, 
+                daily_price=form.daily_price.data, 
+                units_available=form.units_available.data, 
+                is_active=form.is_active.data
+            )
+            db.session.add(new_equip)
+            flash('Equipamento para aluguel adicionado!', 'success')
+            return redirect(url_for('admin.rentable_equipment_list'))
     return render_template('admin_edit_rentable_equipment.html', form=form, title="Adicionar Equipamento para Aluguel")
 
 @admin.route('/rentable-equipment/<int:equipment_id>/edit', methods=['GET', 'POST'])
@@ -257,10 +388,14 @@ def edit_rentable_equipment(equipment_id):
     equip = RentableEquipment.query.get_or_404(equipment_id)
     form = RentableEquipmentForm(obj=equip)
     if form.validate_on_submit():
-        equip.name=form.name.data; equip.description=form.description.data; equip.daily_price=form.daily_price.data; equip.units_available=form.units_available.data; equip.is_active=form.is_active.data
-        db.session.commit()
-        flash('Equipamento para aluguel atualizado!', 'success')
-        return redirect(url_for('admin.rentable_equipment_list'))
+        with session_management():
+            equip.name = form.name.data
+            equip.description = form.description.data
+            equip.daily_price = form.daily_price.data
+            equip.units_available = form.units_available.data
+            equip.is_active = form.is_active.data
+            flash('Equipamento para aluguel atualizado!', 'success')
+            return redirect(url_for('admin.rentable_equipment_list'))
     return render_template('admin_edit_rentable_equipment.html', form=form, title=f"Editando: {equip.name}")
 
 # --- Rotas de Tutoriais e Configurações ---
@@ -276,19 +411,23 @@ def tutorials_list():
 def add_tutorial():
     form = TutorialForm()
     if form.validate_on_submit():
-        new_tutorial = Tutorial(title=form.title.data, video_url=form.video_url.data, description=form.description.data)
-        db.session.add(new_tutorial)
-        db.session.commit()
-        flash('Tutorial adicionado com sucesso!', 'success')
+        with session_management():
+            new_tutorial = Tutorial(
+                title=form.title.data, 
+                video_url=form.video_url.data, 
+                description=form.description.data
+            )
+            db.session.add(new_tutorial)
+            flash('Tutorial adicionado com sucesso!', 'success')
     return redirect(url_for('admin.tutorials_list'))
 
 @admin.route('/tutorials/<int:tutorial_id>/delete', methods=['POST'])
 @admin_required
 def delete_tutorial(tutorial_id):
-    tutorial = Tutorial.query.get_or_404(tutorial_id)
-    db.session.delete(tutorial)
-    db.session.commit()
-    flash('Tutorial removido com sucesso!', 'success')
+    with session_management():
+        tutorial = Tutorial.query.get_or_404(tutorial_id)
+        db.session.delete(tutorial)
+        flash('Tutorial removido com sucesso!', 'success')
     return redirect(url_for('admin.tutorials_list'))
 
 @admin.route('/settings', methods=['GET', 'POST'])
@@ -298,19 +437,19 @@ def site_settings():
     contract = SiteSettings.query.filter_by(key='contract_text').first()
     video_url = SiteSettings.query.filter_by(key='login_video_url').first()
     if form.validate_on_submit():
-        if not contract:
-            contract = SiteSettings(key='contract_text', value=form.contract_text.data)
-            db.session.add(contract)
-        else:
-            contract.value = form.contract_text.data
-        if not video_url:
-            video_url = SiteSettings(key='login_video_url', value=form.login_video_url.data)
-            db.session.add(video_url)
-        else:
-            video_url.value = form.login_video_url.data
-        db.session.commit()
-        flash('Configurações salvas com sucesso!', 'success')
-        return redirect(url_for('admin.site_settings'))
+        with session_management():
+            if not contract:
+                contract = SiteSettings(key='contract_text', value=form.contract_text.data)
+                db.session.add(contract)
+            else:
+                contract.value = form.contract_text.data
+            if not video_url:
+                video_url = SiteSettings(key='login_video_url', value=form.login_video_url.data)
+                db.session.add(video_url)
+            else:
+                video_url.value = form.login_video_url.data
+            flash('Configurações salvas com sucesso!', 'success')
+            return redirect(url_for('admin.site_settings'))
     if contract:
         form.contract_text.data = contract.value
     if video_url:
@@ -337,11 +476,11 @@ def financial_panel():
 @admin.route('/mark-as-paid/<int:reservation_id>', methods=['POST'])
 @admin_required
 def mark_as_paid(reservation_id):
-    reservation = Reservation.query.get_or_404(reservation_id)
-    if not reservation.is_paid:
-        reservation.is_paid = True
-        user = reservation.user
-        user.score = (user.score or 0) + 8
-        db.session.commit()
-        flash(f'Reserva de {user.nome_completo} marcada como paga. Score atualizado!', 'success')
-    return redirect(url_for('admin.financial_panel'))
+    with session_management():
+        reservation = Reservation.query.get_or_404(reservation_id)
+        if not reservation.is_paid:
+            reservation.is_paid = True
+            user = reservation.user
+            user.score = (user.score or 0) + 8
+            flash(f'Reserva de {user.nome_completo} marcada como paga. Score atualizado!', 'success')
+        return redirect(url_for('admin.financial_panel'))

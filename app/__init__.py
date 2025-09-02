@@ -5,7 +5,7 @@ from app.extensions import db, bcrypt, login_manager, migrate, mail
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-
+    
     # Inicialize as extensões
     db.init_app(app)
     bcrypt.init_app(app)
@@ -14,16 +14,20 @@ def create_app(config_class=Config):
     mail.init_app(app)
     
     # Importe os modelos APÓS a inicialização do 'db'
-    
+    from app import models  # Isso registra todos os modelos com o SQLAlchemy
     
     # Registre os blueprints
     from app.routes.auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint)
-
+    
     from app.routes.main import main as main_blueprint
     app.register_blueprint(main_blueprint)
     
     from app.routes.admin import admin as admin_blueprint
     app.register_blueprint(admin_blueprint, url_prefix='/admin')
+    
+    # Registrar a função como filtro global do Jinja2
+    from app.routes.main import get_youtube_id  # Importando a função do main.py
+    app.jinja_env.filters['youtube_id'] = get_youtube_id
     
     return app

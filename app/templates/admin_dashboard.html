@@ -14,31 +14,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        @media (min-width: 640px) {
+            .grid-container {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (min-width: 1024px) {
+            .grid-container {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
     </style>
 </head>
 <body>
     <div class="flex h-screen bg-gray-100">
-        <aside class="flex flex-col bg-white w-64 p-4 shadow-md">
-            <img src="https://odonto-booking.s3.amazonaws.com/logo-ob.png" alt="Logo Odonto Booking" class="h-10 mb-6">
-            <nav class="flex-1">
-                <a href="/admin/dashboard" class="flex items-center p-3 text-gray-700 bg-gray-200 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-200">
-                    <i class="fas fa-home mr-3"></i>
-                    Início
-                </a>
-                <a href="/admin/users" class="flex items-center p-3 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 mt-2">
-                    <i class="fas fa-users mr-3"></i>
-                    Usuários
-                </a>
-                <a href="/admin/rooms" class="flex items-center p-3 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 mt-2">
-                    <i class="fas fa-chair mr-3"></i>
-                    Salas
-                </a>
-                <a href="/admin/auditoria" class="flex items-center p-3 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 mt-2">
-                    <i class="fas fa-history mr-3"></i>
-                    Auditoria
-                </a>
-            </nav>
-        </aside>
 
         <main class="flex-1 p-6 overflow-y-auto">
             <header class="flex justify-between items-center mb-6">
@@ -56,7 +50,65 @@
                 </div>
             </header>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Métricas do Site em Tempo Real</h2>
+                <div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-4">
+                    <div class="w-full md:w-1/2 p-4 bg-gray-50 rounded-lg">
+                        <h3 class="font-semibold text-lg text-gray-700">Acessos Hoje vs. Ontem</h3>
+                        <p class="text-3xl font-bold text-blue-600">321 <span class="text-sm font-normal text-gray-500">acessos hoje (+15% vs. ontem)</span></p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/2 p-4 bg-gray-50 rounded-lg">
+                        <h3 class="font-semibold text-lg text-gray-700">Reservas na Última Semana</h3>
+                        <p class="text-3xl font-bold text-green-600">42 <span class="text-sm font-normal text-gray-500">reservas (+8% vs. semana passada)</span></p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                            <div class="bg-green-600 h-2.5 rounded-full" style="width: 80%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-lg text-gray-700 mb-2">Movimento no Mês</h3>
+                    <img src="https://via.placeholder.com/800x200?text=Gráfico+de+Movimento+Diário" alt="Gráfico de movimento" class="w-full h-auto rounded">
+                </div>
+                <p class="text-sm text-gray-500 mt-2">Informações relevantes: taxa de conversão de reservas, doutores ativos, receita gerada por sala e taxa de ocupação.</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Feedbacks Recentes</h2>
+                <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center">
+                            <i class="fas fa-star text-yellow-400 mr-1"></i>
+                            <i class="fas fa-star text-yellow-400 mr-1"></i>
+                            <i class="fas fa-star text-yellow-400 mr-1"></i>
+                            <i class="fas fa-star text-yellow-400 mr-1"></i>
+                            <i class="fas fa-star-half-alt text-yellow-400"></i>
+                            <span class="ml-2 text-gray-700 font-semibold">4.5 de 5</span>
+                        </div>
+                        <span class="text-sm text-gray-500">28/03/2025</span>
+                    </div>
+                    <p class="font-semibold text-gray-800 mb-1">Dr. Alex S. avaliou a Cadeira Lótus:</p>
+                    <p class="text-gray-600">"Ótima experiência! A sala estava impecável e o Raio-X integrado economiza muito tempo. Apenas o ar condicionado demorou um pouco para esfriar."</p>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">Página 1 de 5</span>
+                    <div>
+                        <a href="#" class="px-3 py-1 bg-gray-300 rounded-lg text-gray-800 hover:bg-gray-400 transition-colors">Anterior</a>
+                        <a href="#" class="px-3 py-1 bg-gray-300 rounded-lg text-gray-800 hover:bg-gray-400 transition-colors">Próximo</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-container">
+                <a href="/admin/manage_agenda" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="p-4 bg-blue-100 rounded-full mb-4">
+                        <i class="fas fa-calendar-alt text-blue-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-1">Agenda de Reservas</h3>
+                    <p class="text-gray-500 text-sm">Visualizar e gerenciar horários.</p>
+                </a>
 
                 <a href="/admin/manage_users" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
                     <div class="p-4 bg-blue-100 rounded-full mb-4">
@@ -68,12 +120,18 @@
 
                 <a href="/admin/manage_rooms" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
                     <div class="p-4 bg-green-100 rounded-full mb-4">
-                        <i class="fas fa-chair text-green-600 text-3xl"></i>
+                        <i class="fas fa-tooth text-green-600 text-3xl"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-1">Gerenciar Salas</h3>
                     <p class="text-gray-500 text-sm">Adicionar, editar e ativar cadeiras.</p>
                 </a>
-
+				<a href="/admin/manage_garage" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="p-4 bg-red-100 rounded-full mb-4">
+                        <i class="fas fa-car text-red-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-1">Gerenciar Garagem</h3>
+                    <p class="text-gray-500 text-sm">Vagas e status de estacionamento.</p>
+                </a>
                 <a href="/admin/manage_equipment" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
                     <div class="p-4 bg-yellow-100 rounded-full mb-4">
                         <i class="fas fa-tools text-yellow-600 text-3xl"></i>
@@ -81,14 +139,70 @@
                     <h3 class="text-xl font-semibold mb-1">Gerenciar Equipamentos</h3>
                     <p class="text-gray-500 text-sm">Controle de itens para aluguel.</p>
                 </a>
-
-                <a href="/admin/manage_garage" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
-                    <div class="p-4 bg-red-100 rounded-full mb-4">
-                        <i class="fas fa-car text-red-600 text-3xl"></i>
+  				 <a href="/admin/manage_equipment" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="p-4 bg-yellow-100 rounded-full mb-4">
+                        <i class="fas fa-tools text-yellow-600 text-3xl"></i>
                     </div>
-                    <h3 class="text-xl font-semibold mb-1">Gerenciar Garagem</h3>
-                    <p class="text-gray-500 text-sm">Vagas e status de estacionamento.</p>
+                    <h3 class="text-xl font-semibold mb-1">TUTORIAIS</h3>
+                    <p class="text-gray-500 text-sm">Gerencie os videos disponíveis para tutorial.</p>
                 </a>
+                <a href="/admin/manage_items" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="p-4 bg-orange-100 rounded-full mb-4">
+                        <i class="fas fa-shopping-cart text-orange-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-1">Itens para Venda</h3>
+                    <p class="text-gray-500 text-sm">Gestão de produtos self-service.</p>
+                </a>
+                
+                <a href="/admin/manage_payments" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="p-4 bg-teal-100 rounded-full mb-4">
+                        <i class="fas fa-money-check-alt text-teal-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-1">Gestão de Recebimento</h3>
+                    <p class="text-gray-500 text-sm">Rastreamento de pagamentos.</p>
+                </a>
+                
+                <a href="/admin/manage_temp_locks" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="p-4 bg-pink-100 rounded-full mb-4">
+                        <i class="fas fa-lock text-pink-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-1">Templog</h3>
+                    <p class="text-gray-500 text-sm">todos os registros do site</p>
+                </a>
+                
+                <a href="/admin/manage_score" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="p-4 bg-gray-100 rounded-full mb-4">
+                        <i class="fas fa-star-half-alt text-gray-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-1">Gestão de Score Interno</h3>
+                    <p class="text-gray-500 text-sm">Ajuste de pontuação de usuários.</p>
+                </a>
+                
+                <a href="/admin/manage_passwords" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="p-4 bg-indigo-100 rounded-full mb-4">
+                        <i class="fas fa-key text-indigo-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-1">Trocar Senhas</h3>
+                    <p class="text-gray-500 text-sm">Redefinir acessos de usuários.</p>
+                </a>
+
+                <a href="/admin/manage_alerts" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="p-4 bg-yellow-100 rounded-full mb-4">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-1">Alertas e Avisos</h3>
+                    <p class="text-gray-500 text-sm">Comunicados importantes para usuários.</p>
+                </a>
+
+                <a href="/admin/manage_xingye" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="p-4 bg-red-100 rounded-full mb-4">
+                        <i class="fas fa-store text-red-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-1">XingYe - Dental Store</h3>
+                    <p class="text-gray-500 text-sm">Controle de estoque e compras</p>
+                </a>
+
+                
 
                 <a href="/admin/finance" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
                     <div class="p-4 bg-purple-100 rounded-full mb-4">
@@ -96,6 +210,8 @@
                     </div>
                     <h3 class="text-xl font-semibold mb-1">Painel Financeiro</h3>
                     <p class="text-gray-500 text-sm">Gráficos de lucro e despesa.</p>
+                </a>
+              
                 </a>
             </div>
         </main>

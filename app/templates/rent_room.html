@@ -1,6 +1,5 @@
 {% extends "layout.html" %}
 {% block content %}
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -16,23 +15,319 @@
         body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; }
         .modal { transition: opacity 0.3s ease, visibility 0.3s ease; }
         .modal.hidden { opacity: 0; visibility: hidden; }
+        .room-card {
+            transition: transform 0.2s;
+        }
+        .room-card:hover {
+            transform: translateY(-5px);
+        }
+        .time-slot {
+            transition: all 0.2s;
+        }
+        .time-slot:hover {
+            transform: scale(1.05);
+        }
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .equipment-tag {
+            display: inline-block;
+            background-color: #e2e8f0;
+            color: #4a5568;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .video-thumbnail {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .video-thumbnail:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .video-container:hover .video-overlay {
+            opacity: 1;
+        }
+        .play-button {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .video-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .video-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .video-modal-content {
+            position: relative;
+            width: 80%;
+            max-width: 800px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .close-video {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+        .video-modal iframe {
+            width: 100%;
+            height: 450px;
+        }
+        .header-date {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .day-of-week {
+            font-size: 1rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .date-display {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .reserved-slot {
+            background-color: #9ca3af !important;
+            cursor: not-allowed !important;
+        }
+        .reserved-slot:hover {
+            transform: none !important;
+        }
+        .user-name {
+            font-size: 0.75rem;
+            text-align: center;
+            margin-top: 0.25rem;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        .tutorial-video-container {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tutorial-video-thumbnail {
+            width: 200px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .tutorial-links {
+            margin-top: 10px;
+        }
+        .tutorial-link {
+            display: block;
+            margin-bottom: 8px;
+            color: #3b82f6;
+            text-decoration: none;
+        }
+        .tutorial-link:hover {
+            text-decoration: underline;
+        }
+        .success-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #10b981;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .success-message.show {
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="p-6">
-    <h1 class="text-3xl font-bold text-center mb-8">Alugar Salas</h1>
-
-    <div id="calendar-section" class="mb-8">
+    <div class="container mx-auto">
+        <div class="header-date mb-6">
+            <div class="day-of-week">{{ selected_date.strftime('%A')|title }}</div>
+            <h1 class="text-3xl font-bold text-center mb-2">Alugar Salas</h1>
+            <div class="date-display">{{ selected_date.strftime('%d/%m/%Y') }}</div>
         </div>
-
-    <div class="bg-white rounded-lg shadow-md p-4 mb-4">
-        <h2 class="text-xl font-bold">Sala 112</h2>
-        <p class="text-gray-600 mb-4">Descrição da sala.</p>
-        <div class="flex flex-wrap gap-2">
-            <button class="time-slot px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition" data-room-id="sala_112" data-start-time="09:00" data-end-time="11:30" onclick="showConfirmationModal('Sala 112', '09:00', 'sala_112', '2025-08-30')">09:00 - 11:30</button>
-            <button class="time-slot px-3 py-1 bg-red-500 text-white rounded">12:00 - 14:30</button>
+        
+        <div class="calendar-nav bg-white rounded-lg shadow-md p-4 mb-6">
+            <a href="{{ url_for('main.rent_room', date=prev_date.strftime('%Y-%m-%d')) }}" class="text-blue-600 hover:text-blue-800">
+                <i class="fas fa-chevron-left mr-2"></i>Anterior
+            </a>
+            <h2 class="text-xl font-semibold text-center">{{ selected_date.strftime('%d/%m/%Y') }}</h2>
+            <a href="{{ url_for('main.rent_room', date=next_date.strftime('%Y-%m-%d')) }}" class="text-blue-600 hover:text-blue-800">
+                Próximo<i class="fas fa-chevron-right ml-2"></i>
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for room in rooms %}
+            <div class="room-card bg-white rounded-lg shadow-md p-4" id="room-{{ room.id }}" data-room-id="{{ room.id }}">
+                <div class="flex justify-between items-start mb-3">
+                    <h2 class="text-xl font-bold">{{ room.name }}</h2>
+                    <button onclick="showTutorials({{ room.id }})" class="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm">
+                        Tutoriais
+                    </button>
+                </div>
+                
+                <div class="video-container mb-4 relative rounded-lg overflow-hidden">
+                    {% if room.video_url %}
+                        <iframe width="100%" height="180" 
+                                src='https://www.youtube.com/embed/{{ get_youtube_id(room.video_url) }}' 
+                                title="YouTube video player" 
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                referrerpolicy="strict-origin-when-cross-origin" 
+                                allowfullscreen>
+                        </iframe>
+                    {% else %}
+                        <div class="bg-gray-200 h-40 flex items-center justify-center">
+                            <span class="text-gray-500">Sem vídeo disponível</span>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <p class="text-gray-600 mb-4">{{ room.description }}</p>
+                
+                <div class="mb-4">
+                    <p class="text-green-600 font-semibold">R$ {{ '%.2f'|format(room.price_2h30) }} (2h30)</p>
+                    {% if room.allow_1h15_rental %}
+                    <p class="text-blue-600 font-semibold">R$ {{ '%.2f'|format(room.price_1h15) }} (1h15)</p>
+                    {% endif %}
+                </div>
+                
+                {% if room.admin_notice %}
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                {{ room.admin_notice }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if room.equipments %}
+                <div class="mb-4">
+                    <h3 class="text-sm font-medium text-gray-700 mb-2">Equipamentos:</h3>
+                    <div>
+                        {% for equipment in room.equipments %}
+                        <span class="equipment-tag">{{ equipment.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Links dos Tutoriais -->
+                <div class="tutorial-links mb-4">
+                    <h3 class="text-sm font-medium text-gray-700 mb-2">Tutoriais:</h3>
+                    {% if room.video_tutorial_url %}
+                    <a href="{{ room.video_tutorial_url }}" target="_blank" class="tutorial-link">
+                        <i class="fas fa-play-circle mr-1"></i> Tutorial Geral
+                    </a>
+                    {% endif %}
+                    {% if room.video_tutorial_autoclave_url %}
+                    <a href="{{ room.video_tutorial_autoclave_url }}" target="_blank" class="tutorial-link">
+                        <i class="fas fa-play-circle mr-1"></i> Tutorial Autoclave
+                    </a>
+                    {% endif %}
+                    {% if room.video_tutorial_raiox_url %}
+                    <a href="{{ room.video_tutorial_raiox_url }}" target="_blank" class="tutorial-link">
+                        <i class="fas fa-play-circle mr-1"></i> Tutorial Raio-X
+                    </a>
+                    {% endif %}
+                    {% if room.video_tutorial_plastificadora_url %}
+                    <a href="{{ room.video_tutorial_plastificadora_url }}" target="_blank" class="tutorial-link">
+                        <i class="fas fa-play-circle mr-1"></i> Tutorial Plastificadora
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <div class="mt-4">
+                    <h3 class="text-lg font-semibold mb-2">Horários Disponíveis:</h3>
+                    <div class="time-slots-container" data-room-id="{{ room.id }}">
+                        <div class="text-center py-4">
+                            <i class="fas fa-spinner fa-spin text-2xl text-blue-500"></i>
+                            <p class="text-gray-600 mt-2">Carregando horários...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-span-full text-center py-8">
+                <p class="text-gray-500 text-lg">Nenhuma sala disponível para aluguel.</p>
+            </div>
+            {% endfor %}
         </div>
     </div>
-
+    
+    <!-- Modal de Vídeo -->
+    <div id="videoModal" class="video-modal">
+        <span class="close-video">&times;</span>
+        <div class="video-modal-content">
+            <iframe id="videoFrame" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+    </div>
+    
+    <!-- Modal de Confirmação de Reserva -->
     <div id="confirmation-modal" class="modal fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
             <div id="step-1">
@@ -43,28 +338,20 @@
                     <button id="confirm-btn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Confirmar</button>
                 </div>
             </div>
-
             <div id="tutorial-step" class="hidden">
                 <h3 class="text-xl font-bold mb-4">Tutoriais Obrigatórios</h3>
                 <p id="tutorial-question" class="mb-4"></p>
-                <div class="flex justify-end gap-2">
+                <div class="tutorial-video-container">
+                    <img id="tutorial-video-thumbnail" src="" alt="Tutorial" class="tutorial-video-thumbnail" onclick="openTutorialVideo()">
+                </div>
+                <div class="flex justify-end gap-2 mt-4">
                     <button id="no-tutorial-btn" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Não</button>
                     <button id="yes-tutorial-btn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Sim</button>
                 </div>
             </div>
-
-            <div id="equipment-step" class="hidden">
-                <h3 class="text-xl font-bold mb-4">Aluguel de Equipamentos</h3>
-                <p class="mb-4">O Doutor vai precisar de algum equipamento?</p>
-                <div class="flex justify-end gap-2">
-                    <button id="no-equipment-btn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Não</button>
-                    <button id="yes-equipment-btn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Sim</button>
-                </div>
-            </div>
-
             <div id="garage-step" class="hidden">
                 <h3 class="text-xl font-bold mb-4">Reserva de Garagem</h3>
-                <p class="mb-4">O Doutor vai precisar de uma vaga de garagem?</p>
+                <p class="mb-4">O doutor gostaria de reservar vaga de garagem?</p>
                 <div class="flex justify-end gap-2">
                     <button id="no-garage-btn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Não</button>
                     <button id="yes-garage-btn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Sim</button>
@@ -72,128 +359,469 @@
             </div>
         </div>
     </div>
-
+    
+    <!-- Mensagem de Sucesso -->
+    <div id="success-message" class="success-message">
+        <i class="fas fa-check-circle mr-2"></i> Reserva realizada com sucesso!
+    </div>
+    
     <script>
-        const modal = document.getElementById('confirmation-modal');
-        const confirmBtn = document.getElementById('confirm-btn');
-        const cancelBtn = document.getElementById('cancel-btn');
-        const tutorialStep = document.getElementById('tutorial-step');
-        const equipmentStep = document.getElementById('equipment-step');
-        const garageStep = document.getElementById('garage-step');
-        const tutorialQuestion = document.getElementById('tutorial-question');
-        const yesTutorialBtn = document.getElementById('yes-tutorial-btn');
-        const noTutorialBtn = document.getElementById('no-tutorial-btn');
-        
-        let reservationData = {};
-        const tutorialQuestions = ["Autoclave", "plastificadora", "bomba de vácuo", "raio x"];
-        let currentQuestionIndex = 0;
-
-        function showConfirmationModal(roomName, timeSlot, roomId, date) {
-            reservationData = { roomName, timeSlot, roomId, date };
-            document.getElementById('room-name').textContent = roomName;
-            document.getElementById('time-slot').textContent = timeSlot;
-            modal.classList.remove('hidden');
-            currentQuestionIndex = 0;
-            document.getElementById('step-1').classList.remove('hidden');
-            tutorialStep.classList.add('hidden');
-            equipmentStep.classList.add('hidden');
-            garageStep.classList.add('hidden');
-        }
-
-        function showTutorialQuestion() {
-            if (currentQuestionIndex < tutorialQuestions.length) {
-                const equipment = tutorialQuestions[currentQuestionIndex];
-                tutorialQuestion.textContent = `O Doutor sabe utilizar ${equipment}?`;
-                document.getElementById('step-1').classList.add('hidden');
-                tutorialStep.classList.remove('hidden');
-            } else {
-                showNextStep('equipment');
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('confirmation-modal');
+            const confirmBtn = document.getElementById('confirm-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const tutorialStep = document.getElementById('tutorial-step');
+            const garageStep = document.getElementById('garage-step');
+            const tutorialQuestion = document.getElementById('tutorial-question');
+            const yesTutorialBtn = document.getElementById('yes-tutorial-btn');
+            const noTutorialBtn = document.getElementById('no-tutorial-btn');
+            const tutorialVideoThumbnail = document.getElementById('tutorial-video-thumbnail');
+            
+            const videoModal = document.getElementById('videoModal');
+            const videoFrame = document.getElementById('videoFrame');
+            const closeVideoBtn = document.querySelector('.close-video');
+            
+            let reservationData = {};
+            let tutorialQuestions = [];
+            let currentQuestionIndex = 0;
+            let tempLockId = null;
+            
+            // Obter o nome do usuário de forma segura
+            function getUserName() {
+                {% if current_user.first_name %}
+                    return '{{ current_user.first_name }}';
+                {% elif current_user.username %}
+                    return '{{ current_user.username }}';
+                {% elif current_user.email %}
+                    return '{{ current_user.email.split('@')[0] }}';
+                {% else %}
+                    return 'Usuário';
+                {% endif %}
             }
-        }
-        
-        function showNextStep(step) {
-            document.getElementById('step-1').classList.add('hidden');
-            tutorialStep.classList.add('hidden');
-            equipmentStep.classList.add('hidden');
-            garageStep.classList.add('hidden');
-
-            if (step === 'equipment') {
-                equipmentStep.classList.remove('hidden');
-            } else if (step === 'garage') {
-                garageStep.classList.remove('hidden');
-            } else {
-                // Fim do fluxo, fechar modal
-                modal.classList.add('hidden');
-                alert("Reserva concluída! Redirecionando...");
-            }
-        }
-
-        // Ação do Botão de Confirmação, agora com chamada de API
-        confirmBtn.addEventListener('click', async () => {
-            // Enviar os dados da pré-reserva para o backend
-            const response = await fetch('/api/lock_slot', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Se você estiver usando CSRF protection, adicione o token aqui
-                },
-                body: JSON.stringify({
-                    room_id: reservationData.roomId,
-                    start_time: reservationData.timeSlot,
-                    date: reservationData.date,
-                    user_id: '{{ current_user.id }}' // Exemplo com Flask-Login
-                })
+            
+            // Carregar horários disponíveis para cada sala
+            const rooms = document.querySelectorAll('.room-card');
+            const selectedDate = '{{ selected_date.strftime("%Y-%m-%d") }}';
+            
+            console.log("Data selecionada:", selectedDate);  // Log para diagnóstico
+            
+            rooms.forEach(room => {
+                const roomId = room.dataset.roomId;
+                const container = room.querySelector('.time-slots-container');
+                
+                console.log(`Carregando horários para a sala ${roomId}`);  // Log para diagnóstico
+                
+                // Buscar horários disponíveis
+                fetch(`/get-room-info?room_id=${roomId}`)
+                    .then(response => response.json())
+                    .then(roomInfo => {
+                        console.log(`Informações da sala ${roomId}:`, roomInfo);  // Log para diagnóstico
+                        
+                        // Agora buscar os horários disponíveis
+                        return fetch(`/get-room-slots?room_id=${roomId}&date=${selectedDate}`)
+                            .then(response => {
+                                console.log(`Resposta da API para sala ${roomId}:`, response.status);  // Log para diagnóstico
+                                if (!response.ok) {
+                                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                console.log(`Dados recebidos para sala ${roomId}:`, data);  // Log para diagnóstico
+                                if (data.error) {
+                                    container.innerHTML = `<p class="text-red-500">Erro ao carregar horários: ${data.error}</p>`;
+                                    return;
+                                }
+                                
+                                // Renderizar slots de 2h30
+                                let slotsHtml = '<div class="mb-4"><h4 class="font-medium mb-2">2h30</h4><div class="flex flex-wrap gap-2">';
+                                if (data.slots && data.slots['2h30']) {
+                                    data.slots['2h30'].forEach(slot => {
+                                        const buttonClass = slot.status === 'available' 
+                                            ? 'bg-green-500 hover:bg-green-600' 
+                                            : 'bg-gray-500 cursor-not-allowed';
+                                        const disabled = slot.status === 'available' ? '' : 'disabled';
+                                        
+                                        if (slot.status === 'available') {
+                                            slotsHtml += `
+                                                <div class="slot-container">
+                                                    <button class="time-slot px-3 py-1 text-white rounded transition ${buttonClass}" 
+                                                            data-room-id="${roomId}" 
+                                                            data-start-time="${slot.start_for_form}" 
+                                                            data-end-time="${slot.end_for_form}"
+                                                            data-duration="2h30"
+                                                            onclick="showConfirmationModal('${roomId}', '${slot.start_str} - ${slot.end_str}', '${slot.start_for_form}', '${slot.end_for_form}', '${selectedDate}')">${slot.start_str} - ${slot.end_str}</button>
+                                                </div>
+                                            `;
+                                        } else {
+                                            slotsHtml += `
+                                                <div class="slot-container">
+                                                    <button class="time-slot px-3 py-1 text-white rounded transition ${buttonClass}" 
+                                                            data-room-id="${roomId}" 
+                                                            data-start-time="${slot.start_for_form}" 
+                                                            data-end-time="${slot.end_for_form}"
+                                                            data-duration="2h30"
+                                                            disabled>${slot.start_str} - ${slot.end_str}</button>
+                                                    ${slot.status === 'reserved' ? `<div class="user-name">${slot.user_name}</div>` : ''}
+                                                </div>
+                                            `;
+                                        }
+                                    });
+                                }
+                                slotsHtml += '</div></div>';
+                                
+                                // Renderizar slots de 1h15 apenas se a sala permitir
+                                if (roomInfo.allow_1h15_rental) {
+                                    slotsHtml += '<div><h4 class="font-medium mb-2">1h15</h4><div class="flex flex-wrap gap-2">';
+                                    if (data.slots && data.slots['1h15']) {
+                                        data.slots['1h15'].forEach(slot => {
+                                            const buttonClass = slot.status === 'available' 
+                                                ? 'bg-blue-500 hover:bg-blue-600' 
+                                                : 'bg-gray-500 cursor-not-allowed';
+                                            const disabled = slot.status === 'available' ? '' : 'disabled';
+                                            
+                                            if (slot.status === 'available') {
+                                                slotsHtml += `
+                                                    <div class="slot-container">
+                                                        <button class="time-slot px-3 py-1 text-white rounded transition ${buttonClass}" 
+                                                                data-room-id="${roomId}" 
+                                                                data-start-time="${slot.start_for_form}" 
+                                                                data-end-time="${slot.end_for_form}"
+                                                                data-duration="1h15"
+                                                                onclick="showConfirmationModal('${roomId}', '${slot.start_str} - ${slot.end_str}', '${slot.start_for_form}', '${slot.end_for_form}', '${selectedDate}')">${slot.start_str} - ${slot.end_str}</button>
+                                                    </div>
+                                                `;
+                                            } else {
+                                                slotsHtml += `
+                                                    <div class="slot-container">
+                                                        <button class="time-slot px-3 py-1 text-white rounded transition ${buttonClass}" 
+                                                                data-room-id="${roomId}" 
+                                                                data-start-time="${slot.start_for_form}" 
+                                                                data-end-time="${slot.end_for_form}"
+                                                                data-duration="1h15"
+                                                                disabled>${slot.start_str} - ${slot.end_str}</button>
+                                                        ${slot.status === 'reserved' ? `<div class="user-name">${slot.user_name}</div>` : ''}
+                                                    </div>
+                                                `;
+                                            }
+                                        });
+                                    }
+                                    slotsHtml += '</div></div>';
+                                }
+                                
+                                container.innerHTML = slotsHtml;
+                            });
+                    })
+                    .catch(error => {
+                        console.error(`Erro ao carregar horários para sala ${roomId}:`, error);  // Log para diagnóstico
+                        container.innerHTML = `<p class="text-red-500">Erro ao carregar horários: ${error.message}</p>`;
+                    });
             });
-
-            const result = await response.json();
-
-            if (result.success) {
-                // Se o backend travou o horário com sucesso, continue o fluxo
-                // Salvando o ID da pré-reserva para uso posterior
-                reservationData.reservationId = result.reservation_id;
-                showTutorialQuestion();
-            } else {
-                // Se o backend retornou um erro (horário já ocupado)
-                alert(result.message);
-                modal.classList.add('hidden'); // Fecha o modal e recarrega a página se necessário
+            
+            // Função global para abrir o modal de confirmação
+            window.showConfirmationModal = function(roomId, timeSlot, startTime, endTime, date) {
+                // Criar um bloqueio temporário para evitar duplas reservas
+                fetch('/create-temp-lock', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        room_id: roomId,
+                        date: date,
+                        start_time: startTime,
+                        end_time: endTime
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        tempLockId = data.lock_id; // Armazenar o ID do bloqueio temporário
+                        
+                        // Buscar informações da sala
+                        fetch(`/get-room-info?room_id=${roomId}`)
+                            .then(response => response.json())
+                            .then(roomInfo => {
+                                reservationData = { 
+                                    roomId, 
+                                    timeSlot, 
+                                    startTime, 
+                                    endTime, 
+                                    date,
+                                    roomName: roomInfo.name
+                                };
+                                
+                                // Preparar as perguntas do tutorial
+                                tutorialQuestions = [];
+                                if (roomInfo.video_tutorial_autoclave_url) {
+                                    tutorialQuestions.push({
+                                        id: 'autoclave',
+                                        question: 'O doutor já sabe usar a autoclave dessa sala?',
+                                        video_url: roomInfo.video_tutorial_autoclave_url
+                                    });
+                                }
+                                if (roomInfo.video_tutorial_plastificadora_url) {
+                                    tutorialQuestions.push({
+                                        id: 'plastificadora',
+                                        question: 'O doutor já sabe usar a plastificadora dessa sala?',
+                                        video_url: roomInfo.video_tutorial_plastificadora_url
+                                    });
+                                }
+                                
+                                document.getElementById('room-name').textContent = roomInfo.name;
+                                document.getElementById('time-slot').textContent = timeSlot;
+                                modal.classList.remove('hidden');
+                                currentQuestionIndex = 0;
+                                document.getElementById('step-1').classList.remove('hidden');
+                                tutorialStep.classList.add('hidden');
+                                garageStep.classList.add('hidden');
+                            })
+                            .catch(error => {
+                                alert('Erro ao carregar informações da sala');
+                                console.error('Error:', error);
+                                // Liberar o bloqueio temporário
+                                releaseTempLock();
+                            });
+                    } else {
+                        // Não mostrar mensagem de erro, apenas não abrir o modal
+                        console.log('Horário já está reservado ou bloqueado');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao criar bloqueio temporário:', error);
+                    // Não mostrar mensagem de erro
+                });
             }
-        });
-
-        // Event Listeners
-        cancelBtn.addEventListener('click', () => {
-            modal.classList.add('hidden');
-            // Se houver uma pré-reserva, você pode querer enviá-la para o backend para ser cancelada
-        });
-
-        noTutorialBtn.addEventListener('click', () => {
-            const equipment = tutorialQuestions[currentQuestionIndex];
-            alert(`Redirecionando para o tutorial de ${equipment}.`);
-            modal.classList.add('hidden');
-        });
-        
-        yesTutorialBtn.addEventListener('click', () => {
-            // Lógica de salvamento de preferência...
-            currentQuestionIndex++;
-            showTutorialQuestion();
-        });
-        
-        document.getElementById('yes-equipment-btn').addEventListener('click', () => {
-            alert("Redirecionando para aluguel de equipamentos em um pop-up menor.");
-            // O código para abrir um pop-up menor com a lista de equipamentos viria aqui.
-        });
-        
-        document.getElementById('no-equipment-btn').addEventListener('click', () => {
-            showNextStep('garage');
-        });
-
-        document.getElementById('yes-garage-btn').addEventListener('click', () => {
-            alert("Redirecionando para a tela de vaga de garagem.");
-            // Lógica de redirecionamento real para a tela de garagem
-            modal.classList.add('hidden');
-        });
-        
-        document.getElementById('no-garage-btn').addEventListener('click', () => {
-            showNextStep('end');
+            
+            function showTutorialQuestion() {
+                if (currentQuestionIndex < tutorialQuestions.length) {
+                    const tutorial = tutorialQuestions[currentQuestionIndex];
+                    tutorialQuestion.textContent = tutorial.question;
+                    
+                    // Configurar a miniatura do vídeo do tutorial
+                    if (tutorial.video_url) {
+                        const videoId = new URLSearchParams(new URL(tutorial.video_url).search).get('v');
+                        tutorialVideoThumbnail.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+                        tutorialVideoThumbnail.dataset.videoUrl = tutorial.video_url;
+                    }
+                    
+                    document.getElementById('step-1').classList.add('hidden');
+                    tutorialStep.classList.remove('hidden');
+                } else {
+                    showNextStep('garage');
+                }
+            }
+            
+            function showNextStep(step) {
+                document.getElementById('step-1').classList.add('hidden');
+                tutorialStep.classList.add('hidden');
+                garageStep.classList.add('hidden');
+                if (step === 'garage') {
+                    garageStep.classList.remove('hidden');
+                } else {
+                    // Fim do fluxo, fechar modal
+                    modal.classList.add('hidden');
+                }
+            }
+            
+            function releaseTempLock() {
+                if (tempLockId) {
+                    fetch('/release-temp-lock', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            lock_id: tempLockId
+                        })
+                    })
+                    .catch(error => {
+                        console.error('Erro ao liberar bloqueio temporário:', error);
+                    });
+                    tempLockId = null;
+                }
+            }
+            
+            function showSuccessMessage() {
+                const successMessage = document.getElementById('success-message');
+                successMessage.classList.add('show');
+                
+                // Esconder a mensagem após 3 segundos
+                setTimeout(() => {
+                    successMessage.classList.remove('show');
+                }, 3000);
+            }
+            
+            function updateRoomSlot(roomId, startTime, endTime) {
+                // Encontrar o container de horários da sala
+                const roomCard = document.getElementById(`room-${roomId}`);
+                const container = roomCard.querySelector('.time-slots-container');
+                
+                // Encontrar o botão correspondente ao horário
+                const buttons = container.querySelectorAll('.time-slot');
+                buttons.forEach(button => {
+                    if (button.dataset.startTime === startTime && button.dataset.endTime === endTime) {
+                        // Atualizar o botão para mostrar que está reservado
+                        button.classList.remove('bg-green-500', 'bg-blue-500', 'hover:bg-green-600', 'hover:bg-blue-600');
+                        button.classList.add('bg-gray-500', 'cursor-not-allowed');
+                        button.disabled = true;
+                        button.removeAttribute('onclick');
+                        
+                        // Adicionar o nome do usuário abaixo do botão
+                        const slotContainer = button.parentElement;
+                        const userNameDiv = document.createElement('div');
+                        userNameDiv.className = 'user-name';
+                        userNameDiv.textContent = getUserName(); // Usar a função para obter o nome
+                        slotContainer.appendChild(userNameDiv);
+                    }
+                });
+            }
+            
+            // Ação do Botão de Confirmação
+            confirmBtn.addEventListener('click', async () => {
+                // Verificar novamente se o horário está disponível
+                const checkResponse = await fetch('/get-room-slots', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                const checkData = await checkResponse.json();
+                
+                // Enviar os dados da reserva para o backend
+                const response = await fetch('/book-room', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        room_id: reservationData.roomId,
+                        date: reservationData.date,
+                        start_time: reservationData.startTime,
+                        end_time: reservationData.endTime
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Fechar o modal de confirmação
+                    modal.classList.add('hidden');
+                    
+                    // Atualizar o botão do horário na interface
+                    updateRoomSlot(reservationData.roomId, reservationData.startTime, reservationData.endTime);
+                    
+                    // Mostrar mensagem de sucesso
+                    showSuccessMessage();
+                    
+                    // Continuar com o fluxo de tutoriais
+                    setTimeout(() => {
+                        showTutorialQuestion();
+                    }, 1000);
+                } else {
+                    // Se o backend retornou um erro
+                    alert(result.message);
+                    modal.classList.add('hidden');
+                    releaseTempLock();
+                }
+            });
+            
+            // Event Listeners
+            cancelBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                releaseTempLock();
+            });
+            
+            noTutorialBtn.addEventListener('click', () => {
+                const tutorial = tutorialQuestions[currentQuestionIndex];
+                // Salvar a preferência do usuário para não mostrar este tutorial novamente
+                fetch('/save-tutorial-preference', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        room_id: reservationData.roomId,
+                        tutorial_type: tutorial.id
+                    })
+                });
+                
+                // Abrir o vídeo do tutorial em uma nova janela
+                if (tutorial.video_url) {
+                    window.open(tutorial.video_url, '_blank');
+                }
+                
+                currentQuestionIndex++;
+                showTutorialQuestion();
+            });
+            
+            yesTutorialBtn.addEventListener('click', () => {
+                const tutorial = tutorialQuestions[currentQuestionIndex];
+                // Salvar a preferência do usuário para não mostrar este tutorial novamente
+                fetch('/save-tutorial-preference', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        room_id: reservationData.roomId,
+                        tutorial_type: tutorial.id
+                    })
+                });
+                
+                currentQuestionIndex++;
+                showTutorialQuestion();
+            });
+            
+            document.getElementById('yes-garage-btn').addEventListener('click', () => {
+                alert("Redirecionando para a tela de vaga de garagem.");
+                modal.classList.add('hidden');
+                // Aqui você pode redirecionar para a página de reserva de garagem
+                // window.location.href = '/alugar-estacionamento?date=' + reservationData.date;
+            });
+            
+            document.getElementById('no-garage-btn').addEventListener('click', () => {
+                showNextStep('end');
+            });
+            
+            // Funções e Event Listeners para o Modal de Vídeo
+            window.openVideoModal = function(videoUrl) {
+                if (videoUrl) {
+                    // Extrai o ID do vídeo do URL
+                    const videoId = new URLSearchParams(new URL(videoUrl).search).get('v');
+                    if (videoId) {
+                        videoFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                        videoModal.classList.add('active');
+                    } else {
+                        alert("URL do vídeo inválido.");
+                    }
+                }
+            };
+            
+            window.openTutorialVideo = function() {
+                const videoUrl = tutorialVideoThumbnail.dataset.videoUrl;
+                if (videoUrl) {
+                    openVideoModal(videoUrl);
+                }
+            };
+            
+            closeVideoBtn.addEventListener('click', () => {
+                videoFrame.src = ""; // Para parar o vídeo
+                videoModal.classList.remove('active');
+            });
+            
+            videoModal.addEventListener('click', (e) => {
+                if (e.target === videoModal) {
+                    closeVideoBtn.click();
+                }
+            });
+            
+            window.showTutorials = function(roomId) {
+                // Implemente a lógica de redirecionamento ou exibição de tutoriais aqui
+                // Por exemplo:
+                alert(`Redirecionando para a página de tutoriais da sala ${roomId}.`);
+            };
         });
     </script>
 </body>

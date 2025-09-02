@@ -7,3 +7,6 @@ python-dotenv
 requests
 Flask-WTF
 email-validator
+Flask-Mail
+wtforms_sqlalchemy
+Pillow
